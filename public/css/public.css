@@ -1,0 +1,22 @@
+.dehum-content-title{
+    font-size: 24px;
+    color: #4ecde2;
+}
+
+
+.dehum-content-subtitle{
+    font-size: 18px;
+    color: #4ecde2;
+}
+
+
+.dehum-content-subtitle-value{
+    font-size: 24px;
+    color: #21ad5c;
+}
+
+
+.dehum-div-border{
+    border: 1px solid grey;
+    text-align: center;
+}
