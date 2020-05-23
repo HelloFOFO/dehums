@@ -4,7 +4,9 @@ let web = require('../action/webAction')
 
 /* GET home page. */
 router.get('/', web.renderHome);
-router.get('/login',web.renderLogin);
-router.get('/logout',web.renderLogout);
+router.get('/adminPage', web.renderAdminPage)
+
+
+router.post('/ajax/global_config', web.updateGlobalConfig)
 
 module.exports = router;

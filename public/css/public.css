@@ -20,3 +20,19 @@
     border: 1px solid grey;
     text-align: center;
 }
+
+body{
+    color: white;
+}
+
+.dehum-div-update-error{
+    color: red;
+}
+
+.dehum-div-update-success{
+    color: #4ecde2;
+}
+
+.dehum-div-update-hide{
+    display: none;
+}

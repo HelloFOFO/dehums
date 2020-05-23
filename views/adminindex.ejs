@@ -1,0 +1,164 @@
+<!-- BEGIN HEADER -->
+<%include widget/adminheader%>
+<!-- END HEADER -->
+
+<!--BEGIN LOAD PAGE LEVEL CSS STYLE-->
+<!-- IF YOU HAVE PAGE LEVEL CSS-->
+<!--<link href="/css/pages/varPageName.css" rel="stylesheet" media="screen">-->
+<!--END LOAD PAGE LEVEL CSS STYLE-->
+
+<!-- BEGIN PAGE CONTAINER -->
+<div class="page-container">
+    <div class="page-content">
+
+        <!-- BEGIN PAGE CONTENT -->
+        <div class="container">
+            <div class="row" style="padding-left:15px;padding-right:15px;">
+                <div class="col-md-12 col-lg-12 dehum-content-title">
+                    全局参数配置
+                </div>
+                <div class="col-md-6 col-lg-6 margin-top-10">
+                    <form class="form-horizontal form-without-legend" role="form">
+                        <div class="form-group">
+                            <label for="poll_interval" class="col-lg-4 control-label">采集间隔 <span class="require">*</span></label>
+                            <div class="col-lg-8">
+                                <input type="text" class="form-control" id="id" value="<%- globalConfig.id%>" style="display: none;">
+                                <input type="text" class="form-control" id="poll_interval" value="<%- globalConfig.poll_interval%>">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cloud_server_ip" class="col-lg-4 control-label">云服务器IP地址 <span class="require">*</span></label>
+                            <div class="col-lg-8">
+                                <input type="text" class="form-control" id="cloud_server_ip" value="<%- globalConfig.cloud_server_ip%>">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cloud_db_name" class="col-lg-4 control-label">云数据库名称 <span class="require">*</span></label>
+                            <div class="col-lg-8">
+                                <input type="text" class="form-control" id="cloud_db_name" value="<%- globalConfig.cloud_db_name%>">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="comm_mode" class="col-lg-4 control-label">通信模式 <span class="require">*</span></label>
+                            <div class="col-lg-8">
+                                <input type="text" class="form-control" id="comm_mode" value="<%- globalConfig.comm_mode%>">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="serial_port" class="col-lg-4 control-label">通讯串口 <span class="require">*</span></label>
+                            <div class="col-lg-8">
+                                <input type="text" class="form-control" id="serial_port" value="<%- globalConfig.serial_port%>">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cloud_server_port" class="col-lg-4 control-label">采集器云端发送端口号 <span class="require">*</span></label>
+                            <div class="col-lg-8">
+                                <input type="text" class="form-control" id="cloud_server_port" value="<%- globalConfig.cloud_server_port%>">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="token" class="col-lg-4 control-label">采集器云端身份标识 <span class="require">*</span></label>
+                            <div class="col-lg-8">
+                                <input type="text" class="form-control" id="token" value="<%- globalConfig.token%>">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12 text-center margin-top-10">
+                                <div id="div_form_update_info" class="dehum-div-update-hide"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12 text-center margin-top-10">
+                                <button type="button" class="btn btn-primary" id="btn_update">更新</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- END PAGE CONTENT -->
+    </div>
+</div>
+<!-- END PAGE CONTAINER -->
+
+
+
+<!-- BEGIN FOOTER -->
+<%include widget/adminfooter%>
+<!-- END FOOTER -->
+
+
+<!-- BEGIN PAGE LEVEL SCRIPTS IF NEEDED-->
+<script type="text/javascript" src="/assets/plugins/validator.min.js" ></script>
+<!-- END PAGE LEVEL SCRIPTS IF NEEDED -->
+
+<script>
+    function initMe() {
+        $('#btn_update').click(updateGlobalConfig)
+    }
+
+    function updateGlobalConfig(){
+        let res = {errorCode: 0, errorMsg : "更新全局配置成功"}
+        let errMsg = check_input()
+        if(errMsg == ""){
+            //更新数据库
+            let conf = {
+                poll_interval: $('#poll_interval').val().trim(),
+                cloud_server_ip: $('#cloud_server_ip').val().trim(),
+                cloud_db_name: $('#cloud_db_name').val().trim(),
+                comm_mode: $('#comm_mode').val().trim(),
+                serial_port: $('#serial_port').val().trim(),
+                cloud_server_port: $('#cloud_server_port').val().trim(),
+                token: $('#token').val().trim(),
+            }
+            url = '/ajax/global_config'
+            $.ajax({
+                url:url,
+                async:true,
+                method:'POST',
+                data:conf
+            }).done(function(data){
+                show_form_update_info(data)
+            })
+        }
+        else{
+            res = {errorCode: -1, errorMsg : errMsg}
+            show_form_update_info(res)
+        }
+    }
+
+    function show_form_update_info(res){
+        $('#div_form_update_info').removeClass('dehum-div-update-hide').text(res.errorMsg);
+        if(res.errorCode == 0){
+            $('#div_form_update_info').removeClass('dehum-div-update-error').addClass('dehum-div-update-success');
+        }
+        else{
+            $('#div_form_update_info').removeClass('dehum-div-update-success').addClass('dehum-div-update-error');
+        }
+    }
+
+    function check_input(){
+        let errorMsg = "";
+        if(!validator.isNumeric($('#poll_interval').val())){
+            errorMsg = "请输入正确的--采集间隔--"
+            return errorMsg
+        }
+        if($('#comm_mode').val() != 0 && $('#comm_mode').val() != 1){
+            errorMsg = "请输入正确的--通信模式--"
+            return errorMsg
+        }
+        if(!validator.isNumeric($('#cloud_server_port').val())){
+            errorMsg = "请输入正确的--采集器云端发送端口号--"
+            return errorMsg
+        }
+        return errorMsg
+    }
+
+    jQuery(document).ready(function() {
+        initMe()
+    });
+</script>
+
+
+</body>
+</html>
