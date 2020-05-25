@@ -172,7 +172,8 @@
                         "targets":[0],
                         "data":"area_num",
                         "width":"10%",
-                        "searchable":false
+                        "searchable":false,
+                        "class": "dehum-td-align-center"
                     },
                     {
                         "targets":[1],
@@ -187,7 +188,8 @@
                         "searchable":false,
                         "render": function(data,type,row){
                             return  moment(data).format("YYYY-MM-DD HH:mm:ss");
-                        }
+                        },
+                        "class": "dehum-td-align-center"
                     },
                     {
                         "targets":[3],
@@ -196,16 +198,18 @@
                         "searchable":false,
                         "render": function(data,type,row){
                             return  moment(data).format("YYYY-MM-DD HH:mm:ss");
-                        }
+                        },
+                        "class": "dehum-td-align-center"
                     },
                     {
                         "targets":[4],
                         "searchable":false,
                         "width":"10%",
                         "render":function(data,type,row){
-                            var retHtml = "<a onclick='updateArea("+row["area_num"]+",\""+row["area_name"]+"\");'>编辑</a>";
+                            var retHtml = "<button class=\"btn-primary\" onclick='updateArea("+row["area_num"]+",\""+row["area_name"]+"\");'>编辑</button>";
                             return retHtml;
-                        }
+                        },
+                        "class": "dehum-td-align-center"
                     }
                 ]
             }

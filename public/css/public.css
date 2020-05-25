@@ -46,3 +46,7 @@ body{
 .dehum-div-ui-dialog label{
     margin-right: 10px;
 }
+
+.dehum-td-align-center{
+    text-align: center;
+}
