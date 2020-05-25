@@ -22,3 +22,26 @@ INSERT INTO sys_config_update_log(insert_dt) VALUES(CURRENT_DATE());
 
 select * from global_config;
 select * from sys_config_update_log;
+
+
+-- 管理相关的表
+-- 站点（1-N）区域（1-N）机柜（1-N）设备  （站点暂时还不需要）
+-- Station         Area             Box              Device
+
+CREATE TABLE sys_area(
+area_num int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+area_name varchar(100),
+insert_dt datetime,
+update_dt timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE sys_box(
+box_num int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+box_name varchar(100),
+box_ip  varchar(50),
+box_port int,
+insert_dt datetime,
+update_dt timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+

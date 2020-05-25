@@ -36,3 +36,13 @@ body{
 .dehum-div-update-hide{
     display: none;
 }
+
+.dehum-div-ui-dialog{
+    height: 30px;
+    line-height: 30px;
+    margin: 10px 0px;
+}
+
+.dehum-div-ui-dialog label{
+    margin-right: 10px;
+}

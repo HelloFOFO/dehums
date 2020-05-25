@@ -1,0 +1,223 @@
+<!-- BEGIN HEADER -->
+<%include widget/adminheader%>
+<!-- END HEADER -->
+
+<!--BEGIN LOAD PAGE LEVEL CSS STYLE-->
+<!-- IF YOU HAVE PAGE LEVEL CSS-->
+<link href="/css/pages/adminarea.css" rel="stylesheet" media="screen">
+<!--END LOAD PAGE LEVEL CSS STYLE-->
+
+<!-- BEGIN PAGE CONTAINER -->
+<div class="page-container">
+    <div class="page-content">
+        <!-- BEGIN PAGE CONTENT -->
+        <div class="container">
+            <div class="row" style="padding-left:15px;padding-right:15px;">
+                <div class="col-md-12 col-lg-12 dehum-content-title">
+                    区域管理
+                </div>
+                <div class="col-md-12 col-lg-12 margin-top-10">
+                    <button id="btn_new_area" class="btn-primary btn-sm">新增区域</button>
+                </div>
+                <div class="col-md-8 col-lg-8 margin-top-10">
+                    <table id="tb_area_list" class="display dataTable table table-bordered dt-head-center" style="table-layout: fixed;" cellspacing="0" width="100%">
+                        <thead>
+                        <tr>
+                            <th>编号</th>
+                            <th>区域名称</th>
+                            <th>日期</th>
+                            <th>更新日期</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="div_modify_area">
+            <div class="dehum-div-ui-dialog">
+                <span>
+                    <label>编号</label>
+                    <span id="areaNum"></span>
+                </span>
+            </div>
+            <div class="dehum-div-ui-dialog">
+                <span>
+                    <label>名称</label>
+                    <input type="text" id="areaName" name="areaName" maxlength="30" size="20">
+                </span>
+            </div>
+
+        </div>
+
+        <div id="div_dialog_result"></div>
+        <!-- END PAGE CONTENT -->
+    </div>
+</div>
+<!-- END PAGE CONTAINER -->
+
+
+
+<!-- BEGIN FOOTER -->
+<%include widget/adminfooter%>
+<!-- END FOOTER -->
+
+
+<!-- BEGIN PAGE LEVEL SCRIPTS IF NEEDED-->
+<script type="text/javascript" src="/assets/plugins/validator.min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/moment.min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/jquery-ui/jquery-ui.min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/jquery-datatable/js/jquery.dataTables.min.js"></script>
+<!-- END PAGE LEVEL SCRIPTS IF NEEDED -->
+
+<script>
+    function updateArea(areaNum,areaName){
+        $('#areaNum').text(areaNum)
+        $('#areaName').val(areaName)
+        $('#div_modify_area').dialog( "option", "title", "编辑区域" )
+        $('#div_modify_area').dialog("open")
+    }
+
+    function initMe() {
+        // 结果提示框，用于各种处理的返回
+        $("#div_dialog_result").dialog({autoOpen:false});
+
+        function reload(){
+            window.location.reload();
+        }
+
+        $('#btn_new_area').click(function(){
+            $('#div_modify_area').dialog( "option", "title", "新增区域" )
+            $('#div_modify_area').dialog("open")
+        });
+
+        $('#div_modify_area').dialog({
+            autoOpen: false,
+            title:"编辑区域",
+            draggable:false,
+            modal:true,
+            buttons: [
+                {
+                    text: "完成",
+                    click: function() {
+                        let areaNum = $('#areaNum').text().trim()
+                        let areaName = $('#areaName').val().trim()
+                        let area = {
+                            "areaNum"  : areaNum,
+                            "areaName" : areaName
+                        }
+
+                        let url = "/ajax/admin/area"
+
+                        $.ajax({
+                            url:url,
+                            async:true,
+                            method:'POST',
+                            data:area
+                        }).done(function(data){
+                            var result = "";
+                            if(data.errorCode == 200){
+                                result = "区域信息更新成功";
+                                $("#div_modify_school_tese").dialog("close");
+                                showResult("编辑区域信息",result);
+                                reload();
+                            }
+                            else{
+                                result = data.errorMsg;
+                                showResult("编辑区域信息",result);
+                            }
+                        });
+
+                    }
+                },
+                {
+                    text: "取消",
+                    click: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            ]
+        })
+
+
+        function showResult(title,text){
+            $("#div_dialog_result").dialog(
+                {
+                    title:title,
+                    dialogClass: "no-close",
+                    modal:true,
+                    buttons:[
+                        {text:"确认",click:function(){$(this).dialog("close");}}
+                    ]
+                });
+            $("#div_dialog_result").text(text);
+            $("#div_dialog_result").dialog("open");
+        }
+
+        var tableAreaList = $('#tb_area_list').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "bLengthChange": false,
+                "info": false,
+                "ajax": {
+                    "url": "/ajax/admin/arealist"
+                },
+                "searching": false,
+                "ordering": false,
+                "autoWidth":false,
+                "pageLength":2,
+                "scrollCollapse":false,
+                "columnDefs":[
+                    {
+                        "targets":[0],
+                        "data":"area_num",
+                        "width":"10%",
+                        "searchable":false
+                    },
+                    {
+                        "targets":[1],
+                        "data":"area_name",
+                        "width":"30%",
+                        "searchable":false
+                    },
+                    {
+                        "targets":[2],
+                        "data":"insert_dt",
+                        "width":"25%",
+                        "searchable":false,
+                        "render": function(data,type,row){
+                            return  moment(data).format("YYYY-MM-DD HH:mm:ss");
+                        }
+                    },
+                    {
+                        "targets":[3],
+                        "data":"update_dt",
+                        "width":"25%",
+                        "searchable":false,
+                        "render": function(data,type,row){
+                            return  moment(data).format("YYYY-MM-DD HH:mm:ss");
+                        }
+                    },
+                    {
+                        "targets":[4],
+                        "searchable":false,
+                        "width":"10%",
+                        "render":function(data,type,row){
+                            var retHtml = "<a onclick='updateArea("+row["area_num"]+",\""+row["area_name"]+"\");'>编辑</a>";
+                            return retHtml;
+                        }
+                    }
+                ]
+            }
+        );
+
+    }
+
+    jQuery(document).ready(function() {
+        initMe()
+    });
+</script>
+
+
+</body>
+</html>
