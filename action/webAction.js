@@ -30,11 +30,11 @@ exports.updateGlobalConfig = function(req, res){
         token: reqConf.token
     }
     dbService.updateGlobalConfig(globalConfig, function(err, result){
-        result = {
-            errorCode: err||0,
-            errorMsg: result
+        let data = {
+            errorCode: (err) ? -1 : 200,
+            errorMsg: (err) ? err : result
         }
-        res.json(result)
+        res.json(data)
     })
 }
 
@@ -67,6 +67,8 @@ exports.getAreaList = function(req, res){
     })
 }
 
+// 更新或者插入新的区域
+// TODO : 待配合改造
 exports.updateElseInsertArea = function(req, res){
     let area = req.body;
     let areaNum = parseInt(area.areaNum)
@@ -87,6 +89,7 @@ exports.renderAdminBox = function(req, res){
     res.render('adminbox', {title: '除湿机管理后台-机柜管理'})
 }
 
+// 返回适配datatable的机柜列表
 exports.getAdminBoxList = function(req, res){
     let param = req.query;  //请求上来的参数
     dbService.getAdminBoxList(param, function(err, data){
@@ -99,6 +102,20 @@ exports.getAdminBoxList = function(req, res){
     })
 }
 
+// 返回kv形式的机柜列表（包含area_num）
+exports.getBoxList = function(req, res){
+    dbService.getBoxList(function(err, data){
+        if(err){
+            res.json({data:[]});
+        }
+        else{
+            res.json({data:data});
+        }
+    })
+}
+
+// 更新或者插入新的机柜
+// TODO : 待配合改造
 exports.updateElseInsertBox = function(req, res){
     let box = req.body;
     let boxNum = parseInt(box.boxNum)
@@ -119,4 +136,41 @@ exports.updateElseInsertBox = function(req, res){
 
 exports.renderAdminDevice = function(req, res){
     res.render('admindevice', {title: '除湿机管理后台-除湿机管理'})
+}
+
+// 返回适配datatable的装置列表
+exports.getAdminDeviceList = function(req, res){
+    let param = req.query;  //请求上来的参数
+    dbService.getAdminDeviceList(param, function(err, data){
+        if(err){
+            res.json(err);
+        }
+        else{
+            res.json(data);
+        }
+    })
+}
+
+// 更新或者插入新的装置
+exports.updateElseInsertDevice = function(req, res){
+    let device = req.body;
+    let id = parseInt(device.id)
+    if(id){
+        dbService.updateDevice(device, function(err, result){
+            let data = {
+                errorCode: (err) ? -1 : 200,
+                errorMsg: (err) ? err : result
+            }
+            res.json(data)
+        })
+    }
+    else{
+        dbService.insertDevice(device, function(err, result){
+            let data = {
+                errorCode: (err) ? -1 : 200,
+                errorMsg: (err) ? err : result
+            }
+            res.json(data)
+        })
+    }
 }

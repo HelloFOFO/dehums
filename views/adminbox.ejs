@@ -129,6 +129,7 @@
         }
 
         $('#btn_new_box').click(function(){
+            $('#boxNum').text("")
             $('#div_modify_box').dialog( "option", "title", "新增机柜" )
             $('#div_modify_box').dialog("open")
         });
@@ -169,7 +170,6 @@
                                 var result = "";
                                 if(data.errorCode == 200){
                                     result = "机柜信息更新成功";
-                                    $("#div_modify_school_tese").dialog("close");
                                     showResult("编辑机柜信息",result);
                                     reload();
                                 }

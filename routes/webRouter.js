@@ -18,11 +18,14 @@ router.post('/ajax/admin/area', web.updateElseInsertArea)
 // 机柜管理相关
 router.get('/adminbox', web.renderAdminBox)
 router.get('/ajax/admin/boxlist', web.getAdminBoxList)
+router.get('/ajax/boxlist', web.getBoxList)
 router.post('/ajax/admin/box', web.updateElseInsertBox)
 
 
 //除湿机管理相关
 router.get('/admindevice', web.renderAdminDevice)
+router.get('/ajax/admin/devicelist', web.getAdminDeviceList)
+router.post('/ajax/admin/device', web.updateElseInsertDevice)
 
 
 module.exports = router;

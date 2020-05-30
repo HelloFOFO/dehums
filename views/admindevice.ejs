@@ -4,7 +4,7 @@
 
 <!--BEGIN LOAD PAGE LEVEL CSS STYLE-->
 <!-- IF YOU HAVE PAGE LEVEL CSS-->
-<!--<link href="/css/pages/varPageName.css" rel="stylesheet" media="screen">-->
+<link href="/css/pages/admindevice.css" rel="stylesheet" media="screen">
 <!--END LOAD PAGE LEVEL CSS STYLE-->
 
 <!-- BEGIN PAGE CONTAINER -->
@@ -16,11 +16,152 @@
                 <div class="col-md-12 col-lg-12 dehum-content-title">
                     除湿机管理
                 </div>
-                <div class="col-md-6 col-lg-6 margin-top-10">
-
+                <div class="col-md-12 col-lg-12 margin-top-10">
+                    <button id="btn_new_device" class="btn-primary btn-sm">新增除湿机</button>
+                </div>
+                <div class="col-md-12 col-lg-12 margin-top-10">
+                    <table id="tb_device_list" class="display dataTable table table-bordered dt-head-center" style="table-layout: fixed;" cellspacing="0" width="100%">
+                        <thead>
+                        <tr>
+                            <th style="display: none">编号</th>
+                            <th>区域名称</th>
+                            <th>机柜名称</th>
+                            <th>装置号</th>
+                            <th>湿度设定值</th>
+                            <th>湿度回差值</th>
+                            <th>湿度调整值</th>
+                            <th>湿度告警上限值</th>
+                            <th>温度告警上限值</th>
+                            <th>温度告警下限值</th>
+                            <th>加热启动温度</th>
+                            <th>加热回差值</th>
+                            <th>装置类型</th>
+                            <th>除湿机功率</th>
+                            <th>加热器功率</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                    </table>
                 </div>
             </div>
         </div>
+        <div id="div_modify_device" style="overflow: hidden">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="input-group">
+                            <span class="input-group-addon" id="span_id">ID</span>
+                            <input type="text" class="form-control" disabled id="id" aria-describedby="span_id">
+                        </div>
+                    </div>
+                </div>
+            <div class="row margin-top-10">
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-addon" id="span_area">区域</span>
+                        <select id="area_num" class="form-control"  aria-describedby="span_area">
+                            <option value="">-请选择区域-</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-addon" id="span_box">机柜</span>
+                        <select id="box_num" class="form-control"  aria-describedby="span_box">
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-addon" id="span_device_num">装置号</span>
+                        <input type="text" class="form-control" id="dev_num" aria-describedby="span_device_num">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row margin-top-10">
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-addon" id="span_hum_set_value">湿度设定值</span>
+                        <input type="text" class="form-control" id="hum_set_value" aria-describedby="span_hum_set_value">
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-addon" id="span_hum_return_diff">湿度回差值</span>
+                        <input type="text" class="form-control" id="hum_return_diff" aria-describedby="span_hum_return_diff">
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-addon" id="span_hum_adjust_value">湿度调整值</span>
+                        <input type="text" class="form-control" id="hum_adjust_value" aria-describedby="span_hum_adjust_value">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row margin-top-10">
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-addon" id="span_hum_high_limit">湿度告警上限值</span>
+                        <input type="text" class="form-control" id="hum_high_limit" aria-describedby="span_hum_high_limit">
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-addon" id="span_temp_high_limit">温度告警上限值</span>
+                        <input type="text" class="form-control" id="temp_high_limit" aria-describedby="span_temp_high_limit">
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-addon" id="span_temp_low_limit">温度告警下限值</span>
+                        <input type="text" class="form-control" id="temp_low_limit" aria-describedby="span_temp_low_limit">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row margin-top-10">
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-addon" id="span_heat_start_temp">加热启动温度</span>
+                        <input type="text" class="form-control" id="heat_start_temp" aria-describedby="span_heat_start_temp">
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-addon" id="span_heat_return_diff">加热回差值</span>
+                        <input type="text" class="form-control" id="heat_return_diff" aria-describedby="span_heat_return_diff">
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-addon" id="span_dev_type">装置类型</span>
+                        <select id="dev_type" class="form-control"  aria-describedby="span_dev_type">
+                            <option value="0" selected>I型除湿机</option>
+                            <option value="1">II型除湿机</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row margin-top-10">
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-addon" id="span_hum_w">除湿机功率</span>
+                        <input type="text" class="form-control" id="hum_w" aria-describedby="span_hum_w">
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-addon" id="span_heat_w">加热器功率</span>
+                        <input type="text" class="form-control" id="heat_w" aria-describedby="span_heat_w">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="div_dialog_result"></div>
         <!-- END PAGE CONTENT -->
     </div>
 </div>
@@ -35,13 +176,380 @@
 
 <!-- BEGIN PAGE LEVEL SCRIPTS IF NEEDED-->
 <script type="text/javascript" src="/assets/plugins/validator.min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/underscore-min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/moment.min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/jquery-ui/jquery-ui.min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/jquery-datatable/js/jquery.dataTables.min.js"></script>
 <!-- END PAGE LEVEL SCRIPTS IF NEEDED -->
 
 <script>
+    let boxList = []
+
+    // 初始化所有的机柜列表
+    function initBoxList(){
+        $.ajax({
+            url:"/ajax/boxlist",
+            async:true,
+            method:'GET'
+        }).done(function(data){
+            boxList = data.data
+        });
+    }
+
+    function bindBoxSelect(){
+        // alert('changed')
+        let html = "<option value=\"\">-请选择机柜-</option>";
+        let currentAreaNum = $('#area_num').val()
+        $('#box_num').empty()
+        if(currentAreaNum != ""){
+            let boxes = _.filter(boxList, function(box){return box.area_num == currentAreaNum;})
+            for(var i in boxes){
+                html+='<option value="_Id_">_Name_</option>'
+                    .replace(/_Id_/,boxes[i].box_num)
+                    .replace(/_Name_/,boxes[i].box_name);
+            }
+            $('#box_num').append(html)
+        }
+    }
+
+    function check_input() {
+        let errorMsg = "";
+
+        if(validator.isEmpty($('#area_num').val())){
+            errorMsg = "请选择--区域--"
+            return errorMsg
+        }
+        if(validator.isEmpty($('#box_num').val())){
+            errorMsg = "请选择--机柜--"
+            return errorMsg
+        }
+        if(!validator.isNumeric($('#dev_num').val())){
+            errorMsg = "请输入正确的--装置号--"
+            return errorMsg
+        }
+
+        if(!validator.isNumeric($('#hum_set_value').val())){
+            errorMsg = "请输入正确的--湿度设定值--"
+            return errorMsg
+        }
+        if(!validator.isNumeric($('#hum_return_diff').val())){
+            errorMsg = "请输入正确的--湿度回差值--"
+            return errorMsg
+        }
+        if(!validator.isNumeric($('#hum_adjust_value').val())){
+            errorMsg = "请输入正确的--湿度调整值--"
+            return errorMsg
+        }
+
+        if(!validator.isNumeric($('#hum_high_limit').val())){
+            errorMsg = "请输入正确的--湿度告警上限值--"
+            return errorMsg
+        }
+        if(!validator.isNumeric($('#temp_high_limit').val())){
+            errorMsg = "请输入正确的--温度告警上限值--"
+            return errorMsg
+        }
+        if(!validator.isNumeric($('#temp_low_limit').val())){
+            errorMsg = "请输入正确的--温度告警下限值--"
+            return errorMsg
+        }
+
+        if(!validator.isNumeric($('#heat_start_temp').val())){
+            errorMsg = "请输入正确的--加热启动温度--"
+            return errorMsg
+        }
+        if(!validator.isNumeric($('#heat_return_diff').val())){
+            errorMsg = "请输入正确的--加热回差值--"
+            return errorMsg
+        }
+
+        if(!validator.isNumeric($('#hum_w').val())){
+            errorMsg = "请输入正确的--除湿机功率--"
+            return errorMsg
+        }
+        if(!validator.isNumeric($('#heat_w').val())){
+            errorMsg = "请输入正确的--加热器功率--"
+            return errorMsg
+        }
+
+        return errorMsg
+    }
+
     function initMe() {
+        // 结果提示框，用于各种处理的返回
+        $('#div_dialog_result').dialog({autoOpen:false});
+
+        renderSelectById("area","/ajax/arealist",function(data){
+            $('#area_num').append(data);
+        });
+
+        $('#area_num').change(bindBoxSelect)
+
+        function reload(){
+            window.location.reload();
+        }
+
+        $('#btn_new_device').click(function(){
+            $('#id').val("")
+            $('#div_modify_device').dialog( "option", "title", "新增除湿机" )
+            $('#div_modify_device').dialog("open")
+        });
+
+        $('#div_modify_device').dialog({
+            autoOpen: false,
+            title:"编辑除湿机",
+            draggable:false,
+            modal:true,
+            width: 800,
+            buttons: [
+                {
+                    text: "完成",
+                    click: function() {
+                        let errMsg = check_input()
+                        if(errMsg == ""){
+                            let id = $('#id').val()
+                            let box_num = $('#box_num').val()
+                            let dev_num = $('#dev_num').val()
+
+                            let hum_set_value = $('#hum_set_value').val()
+                            let hum_return_diff = $('#hum_return_diff').val()
+                            let hum_adjust_value = $('#hum_adjust_value').val()
+
+                            let hum_high_limit = $('#hum_high_limit').val()
+                            let temp_high_limit = $('#temp_high_limit').val()
+                            let temp_low_limit = $('#temp_low_limit').val()
+
+                            let heat_start_temp = $('#heat_start_temp').val()
+                            let heat_return_diff = $('#heat_return_diff').val()
+                            let dev_type = $('#dev_type').val()
+
+                            let hum_w = $('#hum_w').val()
+                            let heat_w = $('#heat_w').val()
+
+                            let box = {
+                                "id"  : id,
+                                "boxNum" : box_num,
+                                "devNum" : dev_num,
+
+                                "humSetValue" : hum_set_value,
+                                "humReturnDiff" : hum_return_diff,
+                                "humAdjustValue" : hum_adjust_value,
+
+                                "humHighLimit" : hum_high_limit,
+                                "tempHighLimit" : temp_high_limit,
+                                "tempLowLimit" : temp_low_limit,
+
+                                "heatStartTemp" : heat_start_temp,
+                                "heatReturnDiff" : heat_return_diff,
+                                "devType" : dev_type,
+
+                                "humW" : hum_w,
+                                "heatW" : heat_w,
+                            }
+                            // alert(JSON.stringify(box))
+
+                            let url = "/ajax/admin/device"
+
+                            $.ajax({
+                                url:url,
+                                async:true,
+                                method:'POST',
+                                data:box
+                            }).done(function(data){
+                                showResult("编辑除湿机信息",data.errorMsg);
+                                if(data.errorCode == 200){
+                                    reload();
+                                }
+                            });
+                        }
+                        else{
+                            showResult("编辑除湿机信息",errMsg);
+                        }
+
+                    }
+                },
+                {
+                    text: "取消",
+                    click: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            ]
+        })
+        
+        var tableDeviceList = $('#tb_device_list').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "bLengthChange": false,
+                "info": false,
+                "ajax": {
+                    "url": "/ajax/admin/devicelist"
+                },
+                "searching": false,
+                "ordering": false,
+                "autoWidth":false,
+                "pageLength":20,
+                "scrollCollapse":false,
+                "columnDefs":[
+                    {
+                        "targets": 0,
+                        "data": "id",
+                        "visible": false
+                    },
+                    {
+                        "targets": 1,
+                        "data":"area_name",
+                        "width":"8%",
+                    },
+                    {
+                        "targets": 2,
+                        "data":"box_name",
+                        "width":"8%",
+                    },
+                    {
+                        "targets": 3,
+                        "data":"dev_num",
+                        "width":"6%",
+                        "class": "dehum-td-align-center"
+                    },
+                    {
+                        "targets": 4,
+                        "data":"hum_set_value",
+                        "width":"6%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 5,
+                        "data":"hum_return_diff",
+                        "width":"6%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 6,
+                        "data":"hum_adjust_value",
+                        "width":"6%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 7,
+                        "data":"hum_high_limit",
+                        "width":"8%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 8,
+                        "data":"temp_high_limit",
+                        "width":"8%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 9,
+                        "data":"temp_low_limit",
+                        "width":"8%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 10,
+                        "data":"heat_start_temp",
+                        "width":"6%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 11,
+                        "data":"heat_return_diff",
+                        "width":"6%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 12,
+                        "render":function(data,type,row){
+                            return row.dev_type == 0 ? 'I型':'II型';
+                        },
+                        "width":"6%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 13,
+                        "data":"hum_w",
+                        "width":"6%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 14,
+                        "data":"heat_w",
+                        "width":"6%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 15,
+                        "width":"6%",
+                        "render":function(data,type,row){
+                            var retHtml = "<button class=\"btn-default btn-editor\" '>编辑</button>" +
+                                "<br>    <button class=\"btn-primary btn-editor\" '>复制</button>";
+                            return retHtml;
+                        },
+                        "class": "dehum-td-align-center"
+                    }
+                ]
+            }
+        );
+
+        $("#tb_device_list tbody").on("click", ".btn-editor", function () {
+            let oper = $(this).text()
+
+            let rowIndex = $("#tb_device_list tr").index($(this).parent("td").parent("tr"));
+
+            //获取某列（从0列开始计数）的值
+            let data = $('#tb_device_list').DataTable().row(rowIndex-1).data();
+            // alert(JSON.stringify(data))
+
+            if(oper == "编辑"){
+                $('#id').val(data.id)
+            }
+            else{
+                $('#id').val("")
+            }
+
+            $('#area_num').val(data.area_num)
+            // 这儿还是要重新绑定下，因为上面的方式不会触发change事件
+            bindBoxSelect()
+            $('#box_num').val(data.box_num)
+            $('#dev_num').val(data.dev_num)
+
+            $('#hum_set_value').val(data.hum_set_value)
+            $('#hum_return_diff').val(data.hum_return_diff)
+            $('#hum_adjust_value').val(data.hum_adjust_value)
+
+            $('#hum_high_limit').val(data.hum_high_limit)
+            $('#temp_high_limit').val(data.temp_high_limit)
+            $('#temp_low_limit').val(data.temp_low_limit)
+
+            $('#heat_start_temp').val(data.heat_start_temp)
+            $('#heat_return_diff').val(data.heat_return_diff)
+            $('#dev_type').val(data.dev_type)
+
+            $('#hum_w').val(data.hum_w)
+            $('#heat_w').val(data.heat_w)
+
+            $('#div_modify_device').dialog( "option", "title", "编辑除湿机" )
+            $('#div_modify_device').dialog("open")
+        });
+
     }
 
     jQuery(document).ready(function() {
+        initBoxList();
         initMe()
     });
 </script>

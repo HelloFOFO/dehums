@@ -1,0 +1,12 @@
+th {
+    text-align: center;
+}
+
+.input-group-addon{
+    border: 0px;
+}
+
+table.dataTable thead th,
+table.dataTable thead td{
+    padding : 8px;
+}

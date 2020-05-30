@@ -98,7 +98,6 @@
     }
 
     function updateGlobalConfig(){
-        let res = {errorCode: 0, errorMsg : "更新全局配置成功"}
         let errMsg = check_input()
         if(errMsg == ""){
             //更新数据库
@@ -111,7 +110,7 @@
                 cloud_server_port: $('#cloud_server_port').val().trim(),
                 token: $('#token').val().trim(),
             }
-            url = '/ajax/global_config'
+            let url = '/ajax/global_config'
             $.ajax({
                 url:url,
                 async:true,
@@ -122,14 +121,14 @@
             })
         }
         else{
-            res = {errorCode: -1, errorMsg : errMsg}
+            let res = {errorCode: -1, errorMsg : errMsg}
             show_form_update_info(res)
         }
     }
 
     function show_form_update_info(res){
         $('#div_form_update_info').removeClass('dehum-div-update-hide').text(res.errorMsg);
-        if(res.errorCode == 0){
+        if(res.errorCode == 200){
             $('#div_form_update_info').removeClass('dehum-div-update-error').addClass('dehum-div-update-success');
         }
         else{

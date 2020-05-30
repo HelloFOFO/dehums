@@ -90,6 +90,7 @@
         }
 
         $('#btn_new_area').click(function(){
+            $('#areaNum').text("")
             $('#div_modify_area').dialog( "option", "title", "新增区域" )
             $('#div_modify_area').dialog("open")
         });
@@ -124,7 +125,6 @@
                                 var result = "";
                                 if(data.errorCode == 200){
                                     result = "区域信息更新成功";
-                                    $("#div_modify_school_tese").dialog("close");
                                     showResult("编辑区域信息",result);
                                     reload();
                                 }
