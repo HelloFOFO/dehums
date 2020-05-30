@@ -11,3 +11,7 @@ show create table dev_config;
 
 select * from global_config;
 select * from sys_config_update_log;
+
+
+select * from sys_area;
+select * from sys_box;

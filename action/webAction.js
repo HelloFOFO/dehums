@@ -42,10 +42,7 @@ exports.renderAdminArea = function(req, res){
     res.render('adminarea', {title: '除湿机管理后台-区域管理'})
 }
 
-exports.renderAdminDevice = function(req, res){
-    res.render('admindevice', {title: '除湿机管理后台-除湿机管理'})
-}
-
+// 返回适配datatable的区域列表
 exports.getAdminAreaList = function(req, res){
     let param = req.query;  //请求上来的参数
     dbService.getAdminAreaList(param, function(err, data){
@@ -54,6 +51,18 @@ exports.getAdminAreaList = function(req, res){
         }
         else{
             res.json(data);
+        }
+    })
+}
+
+// 返回KV格式的区域列表
+exports.getAreaList = function(req, res){
+    dbService.getAreaList(function(err, data){
+        if(err){
+            res.json({data:[]});
+        }
+        else{
+            res.json({data:data});
         }
     })
 }
@@ -71,4 +80,43 @@ exports.updateElseInsertArea = function(req, res){
             res.json(err)
         })
     }
+}
+
+
+exports.renderAdminBox = function(req, res){
+    res.render('adminbox', {title: '除湿机管理后台-机柜管理'})
+}
+
+exports.getAdminBoxList = function(req, res){
+    let param = req.query;  //请求上来的参数
+    dbService.getAdminBoxList(param, function(err, data){
+        if(err){
+            res.json(err);
+        }
+        else{
+            res.json(data);
+        }
+    })
+}
+
+exports.updateElseInsertBox = function(req, res){
+    let box = req.body;
+    let boxNum = parseInt(box.boxNum)
+    if(boxNum){
+        dbService.updateBox(box, function(err){
+            res.json(err)
+        })
+    }
+    else{
+        dbService.insertBox(box, function(err){
+            res.json(err)
+        })
+    }
+}
+
+
+
+
+exports.renderAdminDevice = function(req, res){
+    res.render('admindevice', {title: '除湿机管理后台-除湿机管理'})
 }

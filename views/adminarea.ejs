@@ -71,11 +71,14 @@
 <!-- END PAGE LEVEL SCRIPTS IF NEEDED -->
 
 <script>
-    function updateArea(areaNum,areaName){
-        $('#areaNum').text(areaNum)
-        $('#areaName').val(areaName)
-        $('#div_modify_area').dialog( "option", "title", "编辑区域" )
-        $('#div_modify_area').dialog("open")
+
+    function check_input(){
+        let errorMsg = "";
+        if(validator.isEmpty($('#areaName').val().trim())){
+            errorMsg = "请输入正确的--名称--"
+            return errorMsg
+        }
+        return errorMsg
     }
 
     function initMe() {
@@ -100,34 +103,40 @@
                 {
                     text: "完成",
                     click: function() {
-                        let areaNum = $('#areaNum').text().trim()
-                        let areaName = $('#areaName').val().trim()
-                        let area = {
-                            "areaNum"  : areaNum,
-                            "areaName" : areaName
+
+                        let errMsg = check_input()
+                        if(errMsg == ""){
+                            let areaNum = $('#areaNum').text().trim()
+                            let areaName = $('#areaName').val().trim()
+                            let area = {
+                                "areaNum"  : areaNum,
+                                "areaName" : areaName
+                            }
+
+                            let url = "/ajax/admin/area"
+
+                            $.ajax({
+                                url:url,
+                                async:true,
+                                method:'POST',
+                                data:area
+                            }).done(function(data){
+                                var result = "";
+                                if(data.errorCode == 200){
+                                    result = "区域信息更新成功";
+                                    $("#div_modify_school_tese").dialog("close");
+                                    showResult("编辑区域信息",result);
+                                    reload();
+                                }
+                                else{
+                                    result = data.errorMsg;
+                                    showResult("编辑区域信息",result);
+                                }
+                            })
                         }
-
-                        let url = "/ajax/admin/area"
-
-                        $.ajax({
-                            url:url,
-                            async:true,
-                            method:'POST',
-                            data:area
-                        }).done(function(data){
-                            var result = "";
-                            if(data.errorCode == 200){
-                                result = "区域信息更新成功";
-                                $("#div_modify_school_tese").dialog("close");
-                                showResult("编辑区域信息",result);
-                                reload();
-                            }
-                            else{
-                                result = data.errorMsg;
-                                showResult("编辑区域信息",result);
-                            }
-                        });
-
+                        else{
+                            showResult("编辑区域信息",errMsg);
+                        }
                     }
                 },
                 {
@@ -139,22 +148,7 @@
             ]
         })
 
-
-        function showResult(title,text){
-            $("#div_dialog_result").dialog(
-                {
-                    title:title,
-                    dialogClass: "no-close",
-                    modal:true,
-                    buttons:[
-                        {text:"确认",click:function(){$(this).dialog("close");}}
-                    ]
-                });
-            $("#div_dialog_result").text(text);
-            $("#div_dialog_result").dialog("open");
-        }
-
-        var tableAreaList = $('#tb_area_list').DataTable({
+        let tableAreaList = $('#tb_area_list').DataTable({
                 "processing": true,
                 "serverSide": true,
                 "bLengthChange": false,
@@ -165,7 +159,7 @@
                 "searching": false,
                 "ordering": false,
                 "autoWidth":false,
-                "pageLength":2,
+                "pageLength":20,
                 "scrollCollapse":false,
                 "columnDefs":[
                     {
@@ -206,7 +200,7 @@
                         "searchable":false,
                         "width":"10%",
                         "render":function(data,type,row){
-                            var retHtml = "<button class=\"btn-primary\" onclick='updateArea("+row["area_num"]+",\""+row["area_name"]+"\");'>编辑</button>";
+                            var retHtml = "<button class=\"btn-primary btn-editor\" '>编辑</button>";
                             return retHtml;
                         },
                         "class": "dehum-td-align-center"
@@ -215,6 +209,20 @@
             }
         );
 
+        $("#tb_area_list tbody").on("click", ".btn-editor", function () {
+            //获取行
+            let row = $("#tb_area_list tr").index($(this).parent("td").parent("tr"));
+
+            //获取某列（从0列开始计数）的值
+            let areaNum = $("#tb_area_list").find("tr").eq(row).find("td").eq(0).text();
+            let areaName = $("#tb_area_list").find("tr").eq(row).find("td").eq(1).text();
+
+            $('#areaNum').text(areaNum)
+            $('#areaName').val(areaName)
+
+            $('#div_modify_area').dialog( "option", "title", "编辑区域" )
+            $('#div_modify_area').dialog("open")
+        });
     }
 
     jQuery(document).ready(function() {

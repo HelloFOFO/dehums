@@ -27,7 +27,7 @@ select * from sys_config_update_log;
 -- 管理相关的表
 -- 站点（1-N）区域（1-N）机柜（1-N）设备  （站点暂时还不需要）
 -- Station         Area             Box              Device
-
+-- DROP TABLE IF EXISTS sys_area;
 CREATE TABLE sys_area(
 area_num int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 area_name varchar(100),
@@ -35,9 +35,11 @@ insert_dt datetime,
 update_dt timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- DROP TABLE IF EXISTS sys_box;
 CREATE TABLE sys_box(
 box_num int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 box_name varchar(100),
+area_num int,
 box_ip  varchar(50),
 box_port int,
 insert_dt datetime,

@@ -1,0 +1,323 @@
+<!-- BEGIN HEADER -->
+<%include widget/adminheader%>
+<!-- END HEADER -->
+
+<!--BEGIN LOAD PAGE LEVEL CSS STYLE-->
+<!-- IF YOU HAVE PAGE LEVEL CSS-->
+<link href="/css/pages/adminbox.css" rel="stylesheet" media="screen">
+<!--END LOAD PAGE LEVEL CSS STYLE-->
+
+<!-- BEGIN PAGE CONTAINER -->
+<div class="page-container">
+    <div class="page-content">
+        <!-- BEGIN PAGE CONTENT -->
+        <div class="container">
+            <div class="row" style="padding-left:15px;padding-right:15px;">
+                <div class="col-md-12 col-lg-12 dehum-content-title">
+                    机柜管理
+                </div>
+                <div class="col-md-12 col-lg-12 margin-top-10">
+                    <button id="btn_new_box" class="btn-primary btn-sm">新增机柜</button>
+                </div>
+                <div class="col-md-12 col-lg-12 margin-top-10">
+                    <table id="tb_box_list" class="display dataTable table table-bordered dt-head-center" style="table-layout: fixed;" cellspacing="0" width="100%">
+                        <thead>
+                        <tr>
+                            <th>编号</th>
+                            <th>机柜名称</th>
+                            <th>区域名称</th>
+                            <th>IP</th>
+                            <th>端口</th>
+                            <th>插入日期</th>
+                            <th>更新日期</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="div_modify_box">
+            <div class="dehum-div-ui-dialog">
+                <span>
+                    <label>编号</label>
+                    <span id="boxNum"></span>
+                </span>
+            </div>
+            <div class="dehum-div-ui-dialog">
+                <span>
+                    <label>名称</label>
+                    <input type="text" id="boxName" name="boxName" maxlength="30" size="20">
+                </span>
+            </div>
+            <div class="dehum-div-ui-dialog">
+                <span>
+                    <label>区域</label>
+                    <select id="area">
+                        <option value="">---</option>
+                    </select>
+                </span>
+            </div>
+
+            <div class="dehum-div-ui-dialog">
+                <span>
+                    <label>&nbsp;&nbsp;IP&nbsp;&nbsp;</label>
+                    <input type="text" id="boxIP" name="boxIP" maxlength="30" size="20" value="1.2.3.4">
+                </span>
+            </div>
+
+            <div class="dehum-div-ui-dialog">
+                <span>
+                    <label>端口</label>
+                    <input type="text" id="boxPort" name="boxPort" maxlength="30" size="20" value="1111">
+                </span>
+            </div>
+        </div>
+
+        <div id="div_dialog_result"></div>
+        <!-- END PAGE CONTENT -->
+    </div>
+</div>
+<!-- END PAGE CONTAINER -->
+
+
+
+<!-- BEGIN FOOTER -->
+<%include widget/adminfooter%>
+<!-- END FOOTER -->
+
+
+<!-- BEGIN PAGE LEVEL SCRIPTS IF NEEDED-->
+<script type="text/javascript" src="/assets/plugins/validator.min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/moment.min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/jquery-ui/jquery-ui.min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/jquery-datatable/js/jquery.dataTables.min.js"></script>
+<!-- END PAGE LEVEL SCRIPTS IF NEEDED -->
+
+<script>
+    function check_input() {
+        let errorMsg = "";
+        if(validator.isEmpty($('#boxName').val().trim())){
+            errorMsg = "请输入正确的--名称--"
+            return errorMsg
+        }
+        if(!$('#area').val()){
+            errorMsg = "请选择--机柜--"
+            return errorMsg
+        }
+        if(!validator.isIP($('#boxIP').val().trim())){
+            errorMsg = "请输入正确的--IP--"
+            return errorMsg
+        }
+        if(!validator.isNumeric($('#boxPort').val().trim())){
+            errorMsg = "请输入正确的--端口--"
+            return errorMsg
+        }
+        return errorMsg
+    }
+
+    function initMe() {
+        // 结果提示框，用于各种处理的返回
+        $("#div_dialog_result").dialog({autoOpen:false});
+
+        renderSelectById("area","/ajax/arealist",function(data){
+            $("#area").append(data);
+        });
+
+        function reload(){
+            window.location.reload();
+        }
+
+        $('#btn_new_box').click(function(){
+            $('#div_modify_box').dialog( "option", "title", "新增机柜" )
+            $('#div_modify_box').dialog("open")
+        });
+
+        $('#div_modify_box').dialog({
+            autoOpen: false,
+            title:"编辑机柜",
+            draggable:false,
+            modal:true,
+            buttons: [
+                {
+                    text: "完成",
+                    click: function() {
+                        let errMsg = check_input()
+                        if(errMsg == ""){
+                            let boxNum = $('#boxNum').text().trim()
+                            let boxName = $('#boxName').val().trim()
+                            let areaNum = $('#area').val()
+                            let boxIP = $('#boxIP').val()
+                            let boxPort = $('#boxPort').val()
+                            let box = {
+                                "boxNum"  : boxNum,
+                                "boxName" : boxName,
+                                "areaNum" : areaNum,
+                                "boxIP" : boxIP,
+                                "boxPort" : boxPort
+                            }
+                            // alert(JSON.stringify(box))
+
+                            let url = "/ajax/admin/box"
+
+                            $.ajax({
+                                url:url,
+                                async:true,
+                                method:'POST',
+                                data:box
+                            }).done(function(data){
+                                var result = "";
+                                if(data.errorCode == 200){
+                                    result = "机柜信息更新成功";
+                                    $("#div_modify_school_tese").dialog("close");
+                                    showResult("编辑机柜信息",result);
+                                    reload();
+                                }
+                                else{
+                                    result = data.errorMsg;
+                                    showResult("编辑机柜信息",result);
+                                }
+                            });
+                        }
+                        else{
+                            showResult("编辑机柜信息",errMsg);
+                        }
+
+                    }
+                },
+                {
+                    text: "取消",
+                    click: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            ]
+        })
+
+
+        function showResult(title,text){
+            $("#div_dialog_result").dialog(
+                {
+                    title:title,
+                    dialogClass: "no-close",
+                    modal:true,
+                    buttons:[
+                        {text:"确认",click:function(){$(this).dialog("close");}}
+                    ]
+                });
+            $("#div_dialog_result").text(text);
+            $("#div_dialog_result").dialog("open");
+        }
+
+        var tableBoxList = $('#tb_box_list').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "bLengthChange": false,
+                "info": false,
+                "ajax": {
+                    "url": "/ajax/admin/boxlist"
+                },
+                "searching": false,
+                "ordering": false,
+                "autoWidth":false,
+                "pageLength":20,
+                "scrollCollapse":false,
+                "columnDefs":[
+                    {
+                        "targets":[0],
+                        "data":"box_num",
+                        "width":"8%",
+                        "searchable":false,
+                        "class": "dehum-td-align-center"
+                    },
+                    {
+                        "targets":[1],
+                        "data":"box_name",
+                        "width":"10%",
+                        "searchable":false
+                    },
+                    {
+                        "targets":[2],
+                        "data":"area_name",
+                        "width":"10%",
+                        "searchable":false
+                    },
+                    {
+                        "targets":[3],
+                        "data":"box_ip",
+                        "width":"16%",
+                        "searchable":false
+                    },
+                    {
+                        "targets":[4],
+                        "data":"box_port",
+                        "width":"10%",
+                        "searchable":false
+                    },
+                    {
+                        "targets":[5],
+                        "data":"insert_dt",
+                        "width":"17%",
+                        "searchable":false,
+                        "render": function(data,type,row){
+                            return  moment(data).format("YYYY-MM-DD HH:mm:ss");
+                        },
+                        "class": "dehum-td-align-center"
+                    },
+                    {
+                        "targets":[6],
+                        "data":"update_dt",
+                        "width":"17%",
+                        "searchable":false,
+                        "render": function(data,type,row){
+                            return  moment(data).format("YYYY-MM-DD HH:mm:ss");
+                        },
+                        "class": "dehum-td-align-center"
+                    },
+                    {
+                        "targets":[7],
+                        "searchable":false,
+                        "width":"10%",
+                        "render":function(data,type,row){
+                            var retHtml = "<button class=\"btn-primary btn-editor\" '>编辑</button>";
+                            return retHtml;
+                        },
+                        "class": "dehum-td-align-center"
+                    }
+                ]
+            }
+        );
+
+        $("#tb_box_list tbody").on("click", ".btn-editor", function () {
+            //获取行
+            let row = $("#tb_box_list tr").index($(this).parent("td").parent("tr"));
+
+            //获取某列（从0列开始计数）的值
+            let boxNum = $("#tb_box_list").find("tr").eq(row).find("td").eq(0).text();
+
+            let boxName = $("#tb_box_list").find("tr").eq(row).find("td").eq(1).text();
+            let areaName = $("#tb_box_list").find("tr").eq(row).find("td").eq(2).text();
+
+            let boxIP = $("#tb_box_list").find("tr").eq(row).find("td").eq(3).text();
+            let boxPort = $("#tb_box_list").find("tr").eq(row).find("td").eq(4).text();
+
+            $('#boxNum').text(boxNum)
+            $('#boxName').val(boxName)
+            $('#area option:contains('+areaName+')').attr('selected', true)
+            $('#boxIP').val(boxIP)
+            $('#boxPort').val(boxPort)
+
+            $('#div_modify_box').dialog( "option", "title", "编辑机柜" )
+            $('#div_modify_box').dialog("open")
+        });
+
+    }
+
+    jQuery(document).ready(function() {
+        initMe()
+    });
+</script>
+
+
+</body>
+</html>
