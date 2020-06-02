@@ -167,15 +167,9 @@
                                 method:'POST',
                                 data:box
                             }).done(function(data){
-                                var result = "";
+                                showResult("编辑区域信息",data.errorMsg);
                                 if(data.errorCode == 200){
-                                    result = "机柜信息更新成功";
-                                    showResult("编辑机柜信息",result);
                                     reload();
-                                }
-                                else{
-                                    result = data.errorMsg;
-                                    showResult("编辑机柜信息",result);
                                 }
                             });
                         }

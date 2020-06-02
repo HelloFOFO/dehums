@@ -298,27 +298,28 @@ exports.getAreaList = function(cb){
     );
 }
 
-// TODO： 待改造成waterfall+更新sys_config_update_log表
 exports.updateArea = function(area, cb){
     let areaNum = parseInt(area.areaNum)
     let areaName = area.areaName
     let sql = "";
     let sqlParam = [];
     if(areaNum){
-        async.auto({
-                checkExists: function (cb1) {
+        async.waterfall(
+            [
+                //先判断是否有当前areaNum
+                function(cb1){
                     let bExists = false;
                     sql = "SELECT area_num FROM sys_area WHERE area_num = ? ";
                     sqlParam.push(areaNum);
                     pool.getReadOnlyConnection(function(error,conn) {
                         if (error) {
-                            cb1("error_db_connect", bExists);
+                            cb1("数据库连接失败");
                         }
                         else {
                             conn.query( sql, sqlParam , function(err,rows){
                                 conn.release();
                                 if(err){
-                                    cb1("error_db_query",bExists);
+                                    cb1("数据库查询失败");
                                 }
                                 else{
                                     bExists = (rows.length == 1);
@@ -328,17 +329,48 @@ exports.updateArea = function(area, cb){
                         }
                     });
                 },
-                doUpdate: ['checkExists', function (cb2, results) {
-                    pool.getReadOnlyConnection(function(error,conn) {
-                        if (error) {
-                            cb2("error_db_connect", null);
-                        }
-                        else {
-                            if(!results.checkExists){
-                                cb2("要更新的区域不存在",null);
-                                console.log(areaNum);
+                // 判断传过来的信息是否有效
+                function(bExists, cb4){
+                    if(bExists){
+                        pool.getReadOnlyConnection(function(error,conn) {
+                            if (error) {
+                                cb4("数据库连接失败");
                             }
-                            else{
+                            else {
+                                //先清空之前的参数
+                                sqlParam.splice(0,sqlParam.length);
+                                sql = "SELECT * FROM sys_area WHERE area_name = ? AND area_num <> ?";
+
+                                sqlParam.push(areaName)
+                                sqlParam.push(areaNum);
+
+                                conn.query( sql,sqlParam, function(err, rows){
+                                    conn.release();
+//                                    console.log(sql);
+//                                    console.log(sqlParam);
+                                    if(err){
+                                        cb4("数据库查询失败");
+                                    }
+                                    else{
+                                        let bValid = (rows.length == 0)
+                                        cb4(null, bValid);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    else{
+                        cb4("要更新的区域不存在")
+                    }
+                },
+                // 执行更新数据库操作
+                function(bValid, cb2){
+                    if(bValid){
+                        pool.getReadOnlyConnection(function(error,conn) {
+                            if (error) {
+                                cb2("数据库连接失败");
+                            }
+                            else {
                                 //先清空之前的参数
                                 sqlParam.splice(0,sqlParam.length);
                                 sql = "UPDATE sys_area SET area_name = ? WHERE area_num = ?";
@@ -351,100 +383,223 @@ exports.updateArea = function(area, cb){
 //                                    console.log(sql);
 //                                    console.log(sqlParam);
                                     if(err){
-                                        cb2("error_db_query",null);
+                                        cb2("数据库查询失败");
                                     }
                                     else{
-                                        cb2(null,null);
+                                        cb2(null,true);
                                     }
                                 });
                             }
+                        });
+                    }
+                    else{
+                        cb("已存在同名的区域")
+                        console.log(area)
+                    }
+                },
+                // 先判断 sys_config_update_log 表里是否有ID为1的记录
+                function(bSucceeded, cb){
+                    if(bSucceeded){
+                        pool.getConnection(function (error, conn) {
+                            if (error) {
+                                cb("数据库连接失败");
+                            } else {
+                                // 只取数据库中id为1的那一条
+                                sql = heredoc(function () {/*
+                                 select id
+                                 from   sys_config_update_log
+                                 where  id = 1;
+                                */});
+                                conn.query(sql, function (error, rows) {
+                                    conn.release();
+                                    if (error) {
+                                        cb("数据库查询失败");
+                                    } else {
+                                        cb(null, rows.length);
+                                    }
+                                })
+                            }
+                        })
+                    }
+                    else {
+                        cb("区域更新失败-2")
+                    }
+                },
+                //接着更新 sys_config_update_log 表
+                function(count, cb){
+                    pool.getConnection(function (error, conn) {
+                        if (error) {
+                            cb("数据库连接失败")
+                        } else {
+                            let sqlParams = []
+                            let sql = ""
+                            if (count == 0) {
+                                sql = heredoc(function () {/*
+                             insert into sys_config_update_log(id, sys_area_update_time, insert_dt)
+                             values(1, NOW(), NOW())
+                            */});
+                            }
+                            else {
+                                sql = heredoc(function () {/*
+                             update sys_config_update_log
+                             set    sys_area_update_time = NOW()
+                             where  id = 1
+                             */});
+                            }
+                            conn.query(sql, sqlParams, function (err) {
+                                conn.release();
+                                if (err) {
+                                    cb("区域更新失败-3")
+                                }
+                                else {
+                                    cb(null, "更新区域成功")
+                                }
+                            })
                         }
-                    });
-                }]
-            },function(err){
-                if(err){
-                    cb({"errorCode":-1,"errorMsg":'更新区域信息失败'});
+                    })
                 }
-                else{
-                    cb({"errorCode":200,"errorMsg":'更新区域信息成功'});
-                }
+            ],
+            function(err,result){
+                cb(err, result)
             }
-        );
+        )
     }
     else{
         cb({"errorCode":-1,"errorMsg":'请输入正确的区域编号'})
     }
 }
 
-// TODO： 待改造成waterfall+更新sys_config_update_log表
 exports.insertArea = function(area, cb){
     let sql = "";
     let sqlParam = [];
     let areaName = area.areaName
-    async.auto({
-            checkExists: function (cb1) {
-                let bExists = false;
-                sql = "SELECT area_num FROM sys_area WHERE area_name = ? ";
-                sqlParam.push(areaName);
+    async.waterfall(
+        [
+            // 判断传过来的信息是否有效
+            function(cb4){
                 pool.getReadOnlyConnection(function(error,conn) {
                     if (error) {
-                        cb1("error_db_connect", bExists);
+                        cb4("数据库连接失败");
                     }
                     else {
-                        conn.query( sql, sqlParam , function(err,rows){
+                        //先清空之前的参数
+                        sqlParam.splice(0,sqlParam.length);
+                        sql = "SELECT * FROM sys_area WHERE area_name = ?";
+
+                        sqlParam.push(areaName)
+
+                        conn.query( sql,sqlParam, function(err, rows){
                             conn.release();
+//                                    console.log(sql);
+//                                    console.log(sqlParam);
                             if(err){
-                                cb1("error_db_query",bExists);
+                                cb4("数据库查询失败");
                             }
                             else{
-                                bExists = (rows.length == 1);
-                                cb1(null,bExists);
+                                let bValid = (rows.length == 0)
+                                cb4(null, bValid);
                             }
                         });
                     }
                 });
             },
-            doInsert: ['checkExists', function (cb2, results) {
-                pool.getReadOnlyConnection(function(error,conn) {
-                    if (error) {
-                        cb2("error_db_connect", null);
-                    }
-                    else {
-                        if(results.checkExists){
-                            cb2("已存在同名的区域",null);
-                            console.log(areaName);
+            // 执行更新数据库操作
+            function(bValid, cb2){
+                if(bValid){
+                    pool.getReadOnlyConnection(function(error,conn) {
+                        if (error) {
+                            cb2("数据库连接失败");
                         }
-                        else{
+                        else {
                             //先清空之前的参数
                             sqlParam.splice(0,sqlParam.length);
                             sql = "INSERT INTO sys_area(area_name,insert_dt) VALUES(?, NOW())";
 
                             sqlParam.push(areaName)
 
-                            conn.query( sql,sqlParam, function(err,rows){
+                            conn.query( sql,sqlParam, function(err){
                                 conn.release();
-    //                                    console.log(sql);
-    //                                    console.log(sqlParam);
                                 if(err){
-                                    cb2("error_db_query",null);
+                                    cb2("数据库查询失败");
                                 }
                                 else{
-                                    cb2(null,null);
+                                    cb2(null,true);
                                 }
                             });
                         }
+                    });
+                }
+                else{
+                    cb("已存在同名的区域")
+                    console.log(area)
+                }
+            },
+            // 先判断 sys_config_update_log 表里是否有ID为1的记录
+            function(bSucceeded, cb){
+                if(bSucceeded){
+                    pool.getConnection(function (error, conn) {
+                        if (error) {
+                            cb("数据库连接失败");
+                        } else {
+                            // 只取数据库中id为1的那一条
+                            sql = heredoc(function () {/*
+                                 select id
+                                 from   sys_config_update_log
+                                 where  id = 1;
+                                */});
+                            conn.query(sql, function (error, rows) {
+                                conn.release();
+                                if (error) {
+                                    cb("数据库查询失败");
+                                } else {
+                                    cb(null, rows.length);
+                                }
+                            })
+                        }
+                    })
+                }
+                else {
+                    cb("区域新增失败-2")
+                }
+            },
+            //接着更新 sys_config_update_log 表
+            function(count, cb){
+                pool.getConnection(function (error, conn) {
+                    if (error) {
+                        cb("数据库连接失败")
+                    } else {
+                        let sqlParams = []
+                        let sql = ""
+                        if (count == 0) {
+                            sql = heredoc(function () {/*
+                             insert into sys_config_update_log(id, sys_area_update_time, insert_dt)
+                             values(1, NOW(), NOW())
+                            */});
+                        }
+                        else {
+                            sql = heredoc(function () {/*
+                             update sys_config_update_log
+                             set    sys_area_update_time = NOW()
+                             where  id = 1
+                             */});
+                        }
+                        conn.query(sql, sqlParams, function (err) {
+                            conn.release();
+                            if (err) {
+                                cb("区域新增失败-3")
+                            }
+                            else {
+                                cb(null, "新增区域成功")
+                            }
+                        })
                     }
-                });
-            }]
-        },function(err){
-            if(err){
-                cb({"errorCode":-1,"errorMsg":'新增区域信息失败'});
+                })
             }
-            else{
-                cb({"errorCode":200,"errorMsg":'新增区域信息成功'});
-            }
+        ],
+        function(err,result){
+            cb(err, result)
         }
-    );
+    )
 }
 
 // 返回适配datatable的机柜列表
@@ -572,8 +727,7 @@ exports.getBoxList = function(cb){
     );
 }
 
-// TODO： 待改造成waterfall+更新sys_config_update_log表
-exports.updateBox = function(box, cb){
+exports.updateBoxBak = function(box, cb){
     let boxNum = parseInt(box.boxNum)
     let sql = "";
     let sqlParam = [];
@@ -652,45 +806,209 @@ exports.updateBox = function(box, cb){
     }
 }
 
-// TODO： 待改造成waterfall+更新sys_config_update_log表
+exports.updateBox = function(box, cb){
+    let boxNum = parseInt(box.boxNum)
+    let sql = ""
+    let sqlParam = []
+    if(boxNum){
+        async.waterfall(
+            [
+                // 先判断是否存在boxNum
+                function(cb1){
+                    sql = "SELECT box_num FROM sys_box WHERE box_num = ? ";
+                    sqlParam.push(boxNum);
+                    pool.getReadOnlyConnection(function(error,conn) {
+                        if (error) {
+                            cb1("数据库连接失败");
+                        }
+                        else {
+                            conn.query( sql, sqlParam , function(err,rows){
+                                conn.release();
+                                if(err){
+                                    cb1("数据库操作失败");
+                                }
+                                else{
+                                    let bExists = (rows.length == 1);
+                                    cb1(null,bExists);
+                                }
+                            });
+                        }
+                    });
+                },
+                // 判断输入的参数是否有效
+                // 1、是否同一区域存在同名的其他机柜
+                function(bExists, cb2){
+                    if(bExists){
+                        sql = "SELECT * FROM sys_box WHERE box_name = ? AND area_num = ? AND box_num <> ?";
+                        sqlParam.splice(0, sqlParam.length)
+                        sqlParam.push(box.boxName)
+                        sqlParam.push(box.areaNum)
+                        sqlParam.push(boxNum);
+                        pool.getReadOnlyConnection(function(error,conn) {
+                            if (error) {
+                                cb2("数据库连接失败");
+                            }
+                            else {
+                                conn.query( sql, sqlParam , function(err,rows){
+                                    conn.release();
+                                    if(err){
+                                        cb2("数据库操作失败");
+                                    }
+                                    else{
+                                        let bValid = (rows.length == 0);
+                                        cb2(null,bValid);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    else{
+                        cb2("要更新的机柜不存在")
+                        console.log(box)
+                    }
+                },
+                function(bValid, cb3){
+                    if(bValid){
+                        pool.getReadOnlyConnection(function(error,conn) {
+                            if (error) {
+                                cb3("数据库连接失败");
+                            }
+                            else {
+                                //先清空之前的参数
+                                sqlParam.splice(0,sqlParam.length);
+                                sql = "UPDATE sys_box SET box_name = ?, area_num = ?, box_ip = ?, box_port = ? WHERE box_num = ?";
+
+                                sqlParam.push(box.boxName)
+                                sqlParam.push(box.areaNum)
+                                sqlParam.push(box.boxIP)
+                                sqlParam.push(box.boxPort)
+                                sqlParam.push(boxNum)
+
+                                conn.query( sql,sqlParam, function(err){
+                                    conn.release();
+                                    if(err){
+                                        cb3("数据库操作失败");
+                                    }
+                                    else{
+                                        cb3(null,true);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    else{
+                        cb3("当前区域存在同名的机柜")
+                    }
+                },
+                // 先判断 sys_config_update_log 表里是否有ID为1的记录
+                function(bSucceeded, cb){
+                    if(bSucceeded){
+                        pool.getConnection(function (error, conn) {
+                            if (error) {
+                                cb("数据库连接失败");
+                            } else {
+                                // 只取数据库中id为1的那一条
+                                sql = heredoc(function () {/*
+                                 select id
+                                 from   sys_config_update_log
+                                 where  id = 1;
+                                 */});
+                                conn.query(sql, function (error, rows) {
+                                    conn.release();
+                                    if (error) {
+                                        cb("数据库查询失败");
+                                    } else {
+                                        cb(null, rows.length);
+                                    }
+                                })
+                            }
+                        })
+                    }
+                    else {
+                        cb("机柜更新失败-2")
+                    }
+                },
+                //接着更新 sys_config_update_log 表
+                function(count, cb){
+                    pool.getConnection(function (error, conn) {
+                        if (error) {
+                            cb("数据库连接失败")
+                        } else {
+                            let sqlParams = []
+                            let sql = ""
+                            if (count == 0) {
+                                sql = heredoc(function () {/*
+                             insert into sys_config_update_log(id, sys_box_update_time, insert_dt)
+                             values(1, NOW(), NOW())
+                            */});
+                            }
+                            else {
+                                sql = heredoc(function () {/*
+                             update sys_config_update_log
+                             set    sys_box_update_time = NOW()
+                             where  id = 1
+                             */});
+                            }
+                            conn.query(sql, sqlParams, function (err) {
+                                conn.release();
+                                if (err) {
+                                    cb("机柜更新失败-3")
+                                }
+                                else {
+                                    cb(null, "更新机柜成功")
+                                }
+                            })
+                        }
+                    })
+                }
+            ],
+            function(err, result){
+                cb(err, result)
+            }
+        )
+    }
+    else{
+        cb("请输入正确的机柜编号")
+    }
+}
+
 exports.insertBox = function(box, cb){
     let sql = "";
     let sqlParam = [];
-    async.auto({
-            checkExists: function (cb1) {
-                let bExists = false;
-                sql = "SELECT box_num FROM sys_box WHERE area_num = ? and box_name = ? ";
-                sqlParam.push(box.areaNum);
-                sqlParam.push(box.boxName);
+    async.waterfall(
+        [
+            // 判断输入的参数是否有效
+            // 1、是否同一区域存在同名的其他机柜
+            function(cb2){
+                sql = "SELECT box_num FROM sys_box WHERE box_name = ? AND area_num = ?";
+                sqlParam.splice(0, sqlParam.length)
+                sqlParam.push(box.boxName)
+                sqlParam.push(box.areaNum)
                 pool.getReadOnlyConnection(function(error,conn) {
                     if (error) {
-                        cb1("数据库连接失败", bExists);
+                        cb2("数据库连接失败");
                     }
                     else {
                         conn.query( sql, sqlParam , function(err,rows){
                             conn.release();
                             if(err){
-                                cb1("数据库操作失败",bExists);
+                                cb2("数据库操作失败");
                             }
                             else{
-                                bExists = (rows.length == 1);
-                                cb1(null,bExists);
+                                let bValid = (rows.length == 0);
+                                cb2(null,bValid);
                             }
                         });
                     }
                 });
             },
-            doInsert: ['checkExists', function (cb2, results) {
-                pool.getReadOnlyConnection(function(error,conn) {
-                    if (error) {
-                        cb2("数据库连接失败", null);
-                    }
-                    else {
-                        if(results.checkExists){
-                            cb2("已存在同名的机柜",null);
-                            console.log(box);
+            function(bValid, cb3){
+                if(bValid){
+                    pool.getReadOnlyConnection(function(error,conn) {
+                        if (error) {
+                            cb3("数据库连接失败");
                         }
-                        else{
+                        else {
                             //先清空之前的参数
                             sqlParam.splice(0,sqlParam.length);
                             sql = "INSERT INTO sys_box(box_name, area_num, box_ip, box_port,insert_dt) VALUES(?,?,?,?, NOW())";
@@ -700,41 +1018,100 @@ exports.insertBox = function(box, cb){
                             sqlParam.push(box.boxIP)
                             sqlParam.push(box.boxPort)
 
-                            conn.query( sql,sqlParam, function(err,rows){
+                            conn.query( sql,sqlParam, function(err){
                                 conn.release();
                                 if(err){
-                                    cb2("数据库操作失败",null);
+                                    cb3("数据库操作失败");
                                 }
                                 else{
-                                    cb2(null,null);
+                                    cb3(null,true);
                                 }
                             });
                         }
+                    });
+                }
+                else{
+                    cb3("当前区域存在同名的机柜")
+                }
+            },
+            // 先判断 sys_config_update_log 表里是否有ID为1的记录
+            function(bSucceeded, cb){
+                if(bSucceeded){
+                    pool.getConnection(function (error, conn) {
+                        if (error) {
+                            cb("数据库连接失败");
+                        } else {
+                            // 只取数据库中id为1的那一条
+                            sql = heredoc(function () {/*
+                                 select id
+                                 from   sys_config_update_log
+                                 where  id = 1;
+                                 */});
+                            conn.query(sql, function (error, rows) {
+                                conn.release();
+                                if (error) {
+                                    cb("数据库查询失败");
+                                } else {
+                                    cb(null, rows.length);
+                                }
+                            })
+                        }
+                    })
+                }
+                else {
+                    cb("机柜更新失败-2")
+                }
+            },
+            //接着更新 sys_config_update_log 表
+            function(count, cb){
+                pool.getConnection(function (error, conn) {
+                    if (error) {
+                        cb("数据库连接失败")
+                    } else {
+                        let sqlParams = []
+                        let sql = ""
+                        if (count == 0) {
+                            sql = heredoc(function () {/*
+                             insert into sys_config_update_log(id, sys_box_update_time, insert_dt)
+                             values(1, NOW(), NOW())
+                            */});
+                        }
+                        else {
+                            sql = heredoc(function () {/*
+                             update sys_config_update_log
+                             set    sys_box_update_time = NOW()
+                             where  id = 1
+                             */});
+                        }
+                        conn.query(sql, sqlParams, function (err) {
+                            conn.release();
+                            if (err) {
+                                cb("机柜更新失败-3")
+                            }
+                            else {
+                                cb(null, "更新机柜成功")
+                            }
+                        })
                     }
-                });
-            }]
-        },function(err){
-            if(err){
-                cb({"errorCode":-1,"errorMsg":err});
+                })
             }
-            else{
-                cb({"errorCode":200,"errorMsg":'新增机柜信息成功'});
-            }
+        ],
+        function(err, result){
+            cb(err, result)
         }
-    );
+    )
 }
-
 
 // 返回适配datatable的装置列表
 exports.getAdminDeviceList = function(param, cb){
     /*这是datatable自带的变量*/
-    var draw   = param.sEcho;            //这个是请求时候带过来请求编号，原封不动的还给client
-    var start  = parseInt(param.start);  //起始行数(不是起始页数哦)，从0开始
-    var length = parseInt(param.length); //每页的数据条数
+    let draw   = param.sEcho;            //这个是请求时候带过来请求编号，原封不动的还给client
+    let start  = parseInt(param.start);  //起始行数(不是起始页数哦)，从0开始
+    let length = parseInt(param.length); //每页的数据条数
 
     async.auto({
             checkParam: function (cb) {
-                var whereClause = "";
+                let whereClause = "";
                 // 这儿没有额外的查询条件
                 cb(null,whereClause);
             },
@@ -744,7 +1121,7 @@ exports.getAdminDeviceList = function(param, cb){
                         cb1("error_db_connect", null);
                     }
                     else {
-                        var sql = heredoc( function () {/*
+                        let sql = heredoc( function () {/*
                          select count(1) AS cnt
                          from
                          (
@@ -775,7 +1152,7 @@ exports.getAdminDeviceList = function(param, cb){
                         cb2("error_db_connect", null);
                     }
                     else {
-                        var sql = heredoc( function () {/*
+                        let sql = heredoc( function () {/*
                          SELECT * FROM
                          (
                            SELECT d.id,d.dev_num,d.hum_set_value,d.hum_return_diff,d.hum_adjust_value,d.hum_high_limit,d.temp_high_limit,d.temp_low_limit
@@ -792,7 +1169,7 @@ exports.getAdminDeviceList = function(param, cb){
                          limit ?,?
                          */});
                         sql = sql.replace(/__whereClause__/,results.checkParam);
-                        var sqlParams = [start,length];
+                        let sqlParams = [start,length];
                         conn.query( sql,sqlParams, function(err,rows){
                             conn.release();
                             if(err){
@@ -812,7 +1189,7 @@ exports.getAdminDeviceList = function(param, cb){
                 cb({"errorCode":-1,"errorMsg":'获取装置列表失败'},null);
             }
             else{
-                var data = {draw:draw,data:results.data,recordsTotal:results.total,recordsFiltered:results.total};
+                let data = {draw:draw,data:results.data,recordsTotal:results.total,recordsFiltered:results.total};
                 cb(null,data);
             }
         }
@@ -852,7 +1229,6 @@ exports.updateDevice = function(device, cb){
                 //判断传过来的信息是否有效
                 function(bExists, cb){
                     if(bExists){
-                        let bValid = false;
                         sqlParam.splice(0,sqlParam.length);
                         // 判断是否存在另外一个id，机柜和装置号和要更新的信息一样的；这样是有问题的
                         sql = "SELECT box_num FROM sys_device WHERE id <> ? AND box_num = ? AND dev_num = ? ";
@@ -868,7 +1244,7 @@ exports.updateDevice = function(device, cb){
                                         cb("数据库操作失败");
                                     }
                                     else{
-                                        bValid = (rows.length == 0);
+                                        let bValid = (rows.length == 0);
                                         cb(null,bValid);
                                     }
                                 });

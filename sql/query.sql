@@ -40,4 +40,13 @@ SELECT d.id,d.dev_num,d.hum_set_value,d.hum_return_diff,d.hum_adjust_value,d.hum
 FROM   sys_device d
 	  LEFT JOIN sys_box b  ON d.box_num = b.box_num
 	  LEFT JOIN sys_area a ON b.area_num = a.area_num;
+      
+      
+
+select * from sys_config_update_log;
+select * from sys_box order by update_dt desc;
+select * from sys_area;
+
+
+
 

@@ -17,6 +17,7 @@ global_config_update_time datetime,
 sys_area_update_time datetime,
 sys_box_update_time datetime,
 sys_device_update_time datetime,
+dev_config_update_time datetime,
 insert_dt datetime,
 update_dt timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

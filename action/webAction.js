@@ -68,18 +68,25 @@ exports.getAreaList = function(req, res){
 }
 
 // 更新或者插入新的区域
-// TODO : 待配合改造
 exports.updateElseInsertArea = function(req, res){
     let area = req.body;
     let areaNum = parseInt(area.areaNum)
     if(areaNum){
-        dbService.updateArea(area, function(err){
-            res.json(err)
+        dbService.updateArea(area, function(err, result){
+            let data = {
+                errorCode: (err) ? -1 : 200,
+                errorMsg: (err) ? err : result
+            }
+            res.json(data)
         })
     }
     else{
-        dbService.insertArea(area, function(err){
-            res.json(err)
+        dbService.insertArea(area, function(err, result){
+            let data = {
+                errorCode: (err) ? -1 : 200,
+                errorMsg: (err) ? err : result
+            }
+            res.json(data)
         })
     }
 }
@@ -115,18 +122,25 @@ exports.getBoxList = function(req, res){
 }
 
 // 更新或者插入新的机柜
-// TODO : 待配合改造
 exports.updateElseInsertBox = function(req, res){
     let box = req.body;
     let boxNum = parseInt(box.boxNum)
     if(boxNum){
-        dbService.updateBox(box, function(err){
-            res.json(err)
+        dbService.updateBox(box, function(err, result){
+            let data = {
+                errorCode: (err) ? -1 : 200,
+                errorMsg: (err) ? err : result
+            }
+            res.json(data)
         })
     }
     else{
-        dbService.insertBox(box, function(err){
-            res.json(err)
+        dbService.insertBox(box, function(err, result){
+            let data = {
+                errorCode: (err) ? -1 : 200,
+                errorMsg: (err) ? err : result
+            }
+            res.json(data)
         })
     }
 }
