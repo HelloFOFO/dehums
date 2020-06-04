@@ -45,7 +45,16 @@ FROM   sys_device d
 
 select * from sys_config_update_log;
 select * from sys_box order by update_dt desc;
+select * from sys_device order by update_dt desc;
+select * from sys_device order by id asc;
 select * from sys_area;
+
+SELECT MAX(update_dt) FROM sys_box;
+
+SELECT MAX(update_dt) FROM sys_area;
+
+
+
 
 
 

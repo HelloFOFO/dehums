@@ -106,66 +106,29 @@ exports.updateGlobalConfig = function(conf, cb){
                     }
                 })
             },
-            // 先判断 sys_config_update_log 表里是否有ID为1的记录
+            //接着更新 sys_config_update_log 表
             function(bSucceeded, cb){
                 if(bSucceeded){
                     pool.getConnection(function (error, conn) {
                         if (error) {
                             cb("数据库连接失败");
                         } else {
-                            // 只取数据库中id为1的那一条
-                            var sql = heredoc(function () {/*
-                             select id
-                             from   sys_config_update_log
-                             where  id = 1;
-                             */});
-                            conn.query(sql, function (error, rows) {
+                            let sql = "CALL spb_update_sys_config_update_from_systables()"
+                            conn.query(sql, function (err) {
                                 conn.release();
-                                if (error) {
-                                    cb("数据库查询失败");
-                                } else {
-                                    cb(null, rows.length);
+                                if (err) {
+                                    cb("全局配置更新失败-3");
+                                }
+                                else {
+                                    cb(null, "全局配置更新成功")
                                 }
                             })
                         }
                     })
                 }
-                else {
+                else{
                     cb("全局配置更新失败-2")
                 }
-            },
-            //接着更新 sys_config_update_log 表
-            function(count, cb){
-                pool.getConnection(function (error, conn) {
-                    if (error) {
-                        cb("数据库连接失败");
-                    } else {
-                        let sqlParams = []
-                        let sql = ""
-                        if (count == 0) {
-                            sql = heredoc(function () {/*
-                             insert into sys_config_update_log(id, global_config_update_time, insert_dt)
-                             values(1, NOW(), NOW())
-                            */});
-                        }
-                        else {
-                            sql = heredoc(function () {/*
-                             update sys_config_update_log
-                             set    global_config_update_time = NOW()
-                             where  id = 1
-                             */});
-                        }
-                        conn.query(sql, sqlParams, function (err, rows) {
-                            conn.release();
-                            if (err) {
-                                cb("全局配置更新失败-3");
-                            }
-                            else {
-                                cb(null, "全局配置更新成功")
-                            }
-                        })
-                    }
-                })
             }
         ], function(err, result){
             cb(err, result)
@@ -397,66 +360,29 @@ exports.updateArea = function(area, cb){
                         console.log(area)
                     }
                 },
-                // 先判断 sys_config_update_log 表里是否有ID为1的记录
+                //接着更新 sys_config_update_log 表
                 function(bSucceeded, cb){
                     if(bSucceeded){
                         pool.getConnection(function (error, conn) {
                             if (error) {
                                 cb("数据库连接失败");
                             } else {
-                                // 只取数据库中id为1的那一条
-                                sql = heredoc(function () {/*
-                                 select id
-                                 from   sys_config_update_log
-                                 where  id = 1;
-                                */});
-                                conn.query(sql, function (error, rows) {
+                                let sql = "CALL spb_update_sys_config_update_from_systables()"
+                                conn.query(sql, function (err) {
                                     conn.release();
-                                    if (error) {
-                                        cb("数据库查询失败");
-                                    } else {
-                                        cb(null, rows.length);
+                                    if (err) {
+                                        cb("区域更新失败-3");
+                                    }
+                                    else {
+                                        cb(null, "区域更新成功")
                                     }
                                 })
                             }
                         })
                     }
-                    else {
+                    else{
                         cb("区域更新失败-2")
                     }
-                },
-                //接着更新 sys_config_update_log 表
-                function(count, cb){
-                    pool.getConnection(function (error, conn) {
-                        if (error) {
-                            cb("数据库连接失败")
-                        } else {
-                            let sqlParams = []
-                            let sql = ""
-                            if (count == 0) {
-                                sql = heredoc(function () {/*
-                             insert into sys_config_update_log(id, sys_area_update_time, insert_dt)
-                             values(1, NOW(), NOW())
-                            */});
-                            }
-                            else {
-                                sql = heredoc(function () {/*
-                             update sys_config_update_log
-                             set    sys_area_update_time = NOW()
-                             where  id = 1
-                             */});
-                            }
-                            conn.query(sql, sqlParams, function (err) {
-                                conn.release();
-                                if (err) {
-                                    cb("区域更新失败-3")
-                                }
-                                else {
-                                    cb(null, "更新区域成功")
-                                }
-                            })
-                        }
-                    })
                 }
             ],
             function(err,result){
@@ -534,66 +460,29 @@ exports.insertArea = function(area, cb){
                     console.log(area)
                 }
             },
-            // 先判断 sys_config_update_log 表里是否有ID为1的记录
+            //接着更新 sys_config_update_log 表
             function(bSucceeded, cb){
                 if(bSucceeded){
                     pool.getConnection(function (error, conn) {
                         if (error) {
                             cb("数据库连接失败");
                         } else {
-                            // 只取数据库中id为1的那一条
-                            sql = heredoc(function () {/*
-                                 select id
-                                 from   sys_config_update_log
-                                 where  id = 1;
-                                */});
-                            conn.query(sql, function (error, rows) {
+                            let sql = "CALL spb_update_sys_config_update_from_systables()"
+                            conn.query(sql, function (err) {
                                 conn.release();
-                                if (error) {
-                                    cb("数据库查询失败");
-                                } else {
-                                    cb(null, rows.length);
+                                if (err) {
+                                    cb("区域新增失败-3");
+                                }
+                                else {
+                                    cb(null, "区域新增成功")
                                 }
                             })
                         }
                     })
                 }
-                else {
+                else{
                     cb("区域新增失败-2")
                 }
-            },
-            //接着更新 sys_config_update_log 表
-            function(count, cb){
-                pool.getConnection(function (error, conn) {
-                    if (error) {
-                        cb("数据库连接失败")
-                    } else {
-                        let sqlParams = []
-                        let sql = ""
-                        if (count == 0) {
-                            sql = heredoc(function () {/*
-                             insert into sys_config_update_log(id, sys_area_update_time, insert_dt)
-                             values(1, NOW(), NOW())
-                            */});
-                        }
-                        else {
-                            sql = heredoc(function () {/*
-                             update sys_config_update_log
-                             set    sys_area_update_time = NOW()
-                             where  id = 1
-                             */});
-                        }
-                        conn.query(sql, sqlParams, function (err) {
-                            conn.release();
-                            if (err) {
-                                cb("区域新增失败-3")
-                            }
-                            else {
-                                cb(null, "新增区域成功")
-                            }
-                        })
-                    }
-                })
             }
         ],
         function(err,result){
@@ -900,66 +789,29 @@ exports.updateBox = function(box, cb){
                         cb3("当前区域存在同名的机柜")
                     }
                 },
-                // 先判断 sys_config_update_log 表里是否有ID为1的记录
+                //接着更新 sys_config_update_log 表
                 function(bSucceeded, cb){
                     if(bSucceeded){
                         pool.getConnection(function (error, conn) {
                             if (error) {
                                 cb("数据库连接失败");
                             } else {
-                                // 只取数据库中id为1的那一条
-                                sql = heredoc(function () {/*
-                                 select id
-                                 from   sys_config_update_log
-                                 where  id = 1;
-                                 */});
-                                conn.query(sql, function (error, rows) {
+                                let sql = "CALL spb_update_sys_config_update_from_systables()"
+                                conn.query(sql, function (err) {
                                     conn.release();
-                                    if (error) {
-                                        cb("数据库查询失败");
-                                    } else {
-                                        cb(null, rows.length);
+                                    if (err) {
+                                        cb("机柜更新失败-3");
+                                    }
+                                    else {
+                                        cb(null, "机柜更新成功")
                                     }
                                 })
                             }
                         })
                     }
-                    else {
+                    else{
                         cb("机柜更新失败-2")
                     }
-                },
-                //接着更新 sys_config_update_log 表
-                function(count, cb){
-                    pool.getConnection(function (error, conn) {
-                        if (error) {
-                            cb("数据库连接失败")
-                        } else {
-                            let sqlParams = []
-                            let sql = ""
-                            if (count == 0) {
-                                sql = heredoc(function () {/*
-                             insert into sys_config_update_log(id, sys_box_update_time, insert_dt)
-                             values(1, NOW(), NOW())
-                            */});
-                            }
-                            else {
-                                sql = heredoc(function () {/*
-                             update sys_config_update_log
-                             set    sys_box_update_time = NOW()
-                             where  id = 1
-                             */});
-                            }
-                            conn.query(sql, sqlParams, function (err) {
-                                conn.release();
-                                if (err) {
-                                    cb("机柜更新失败-3")
-                                }
-                                else {
-                                    cb(null, "更新机柜成功")
-                                }
-                            })
-                        }
-                    })
                 }
             ],
             function(err, result){
@@ -1034,66 +886,29 @@ exports.insertBox = function(box, cb){
                     cb3("当前区域存在同名的机柜")
                 }
             },
-            // 先判断 sys_config_update_log 表里是否有ID为1的记录
+            //接着更新 sys_config_update_log 表
             function(bSucceeded, cb){
                 if(bSucceeded){
                     pool.getConnection(function (error, conn) {
                         if (error) {
                             cb("数据库连接失败");
                         } else {
-                            // 只取数据库中id为1的那一条
-                            sql = heredoc(function () {/*
-                                 select id
-                                 from   sys_config_update_log
-                                 where  id = 1;
-                                 */});
-                            conn.query(sql, function (error, rows) {
+                            let sql = "CALL spb_update_sys_config_update_from_systables()"
+                            conn.query(sql, function (err) {
                                 conn.release();
-                                if (error) {
-                                    cb("数据库查询失败");
-                                } else {
-                                    cb(null, rows.length);
+                                if (err) {
+                                    cb("机柜新增失败-3");
+                                }
+                                else {
+                                    cb(null, "机柜新增成功")
                                 }
                             })
                         }
                     })
                 }
-                else {
-                    cb("机柜更新失败-2")
+                else{
+                    cb("机柜新增失败-2")
                 }
-            },
-            //接着更新 sys_config_update_log 表
-            function(count, cb){
-                pool.getConnection(function (error, conn) {
-                    if (error) {
-                        cb("数据库连接失败")
-                    } else {
-                        let sqlParams = []
-                        let sql = ""
-                        if (count == 0) {
-                            sql = heredoc(function () {/*
-                             insert into sys_config_update_log(id, sys_box_update_time, insert_dt)
-                             values(1, NOW(), NOW())
-                            */});
-                        }
-                        else {
-                            sql = heredoc(function () {/*
-                             update sys_config_update_log
-                             set    sys_box_update_time = NOW()
-                             where  id = 1
-                             */});
-                        }
-                        conn.query(sql, sqlParams, function (err) {
-                            conn.release();
-                            if (err) {
-                                cb("机柜更新失败-3")
-                            }
-                            else {
-                                cb(null, "更新机柜成功")
-                            }
-                        })
-                    }
-                })
             }
         ],
         function(err, result){
@@ -1308,66 +1123,29 @@ exports.updateDevice = function(device, cb){
                         cb("该机柜已存在同样的装置号")
                     }
                 },
-                // 先判断 sys_config_update_log 表里是否有ID为1的记录
+                //接着更新 sys_config_update_log 表
                 function(bSucceeded, cb){
                     if(bSucceeded){
                         pool.getConnection(function (error, conn) {
                             if (error) {
                                 cb("数据库连接失败");
                             } else {
-                                // 只取数据库中id为1的那一条
-                                sql = heredoc(function () {/*
-                             select id
-                             from   sys_config_update_log
-                             where  id = 1;
-                             */});
-                                conn.query(sql, function (error, rows) {
+                                let sql = "CALL spb_update_sys_config_update_from_systables()"
+                                conn.query(sql, function (err) {
                                     conn.release();
-                                    if (error) {
-                                        cb("数据库查询失败");
-                                    } else {
-                                        cb(null, rows.length);
+                                    if (err) {
+                                        cb("除湿机更新失败-3");
+                                    }
+                                    else {
+                                        cb(null, "除湿机更新成功")
                                     }
                                 })
                             }
                         })
                     }
-                    else {
+                    else{
                         cb("除湿机更新失败-2")
                     }
-                },
-                //接着更新 sys_config_update_log 表
-                function(count, cb){
-                    pool.getConnection(function (error, conn) {
-                        if (error) {
-                            cb("数据库连接失败")
-                        } else {
-                            let sqlParams = []
-                            let sql = ""
-                            if (count == 0) {
-                                sql = heredoc(function () {/*
-                             insert into sys_config_update_log(id, sys_device_update_time, insert_dt)
-                             values(1, NOW(), NOW())
-                            */});
-                            }
-                            else {
-                                sql = heredoc(function () {/*
-                             update sys_config_update_log
-                             set    sys_device_update_time = NOW()
-                             where  id = 1
-                             */});
-                            }
-                            conn.query(sql, sqlParams, function (err, rows) {
-                                conn.release();
-                                if (err) {
-                                    cb("除湿机更新失败-3")
-                                }
-                                else {
-                                    cb(null, "更新除湿机成功")
-                                }
-                            })
-                        }
-                    })
                 }
             ],
             function(err, result){
@@ -1459,66 +1237,29 @@ exports.insertDevice = function(device, cb){
                     })
                 }
             },
-            // 先判断 sys_config_update_log 表里是否有ID为1的记录
+            //接着更新 sys_config_update_log 表
             function(bSucceeded, cb){
                 if(bSucceeded){
                     pool.getConnection(function (error, conn) {
                         if (error) {
                             cb("数据库连接失败");
                         } else {
-                            // 只取数据库中id为1的那一条
-                            sql = heredoc(function () {/*
-                             select id
-                             from   sys_config_update_log
-                             where  id = 1;
-                             */});
-                            conn.query(sql, function (error, rows) {
+                            let sql = "CALL spb_update_sys_config_update_from_systables()"
+                            conn.query(sql, function (err) {
                                 conn.release();
-                                if (error) {
-                                    cb("数据库查询失败");
-                                } else {
-                                    cb(null, rows.length);
+                                if (err) {
+                                    cb("除湿机新增失败-3");
+                                }
+                                else {
+                                    cb(null, "除湿机新增成功")
                                 }
                             })
                         }
                     })
                 }
-                else {
-                    cb("除湿机更新失败-2")
+                else{
+                    cb("除湿机新增失败-2")
                 }
-            },
-            //接着更新 sys_config_update_log 表
-            function(count, cb){
-                pool.getConnection(function (error, conn) {
-                    if (error) {
-                        cb("数据库连接失败")
-                    } else {
-                        let sqlParams = []
-                        let sql = ""
-                        if (count == 0) {
-                            sql = heredoc(function () {/*
-                             insert into sys_config_update_log(id, sys_device_update_time, insert_dt)
-                             values(1, NOW(), NOW())
-                            */});
-                        }
-                        else {
-                            sql = heredoc(function () {/*
-                             update sys_config_update_log
-                             set    sys_device_update_time = NOW()
-                             where  id = 1
-                             */});
-                        }
-                        conn.query(sql, sqlParams, function (err, rows) {
-                            conn.release();
-                            if (err) {
-                                cb("除湿机更新失败-3")
-                            }
-                            else {
-                                cb(null, "新增除湿机成功")
-                            }
-                        })
-                    }
-                })
             }
         ],
         function(err,result){

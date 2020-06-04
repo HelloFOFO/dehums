@@ -71,7 +71,12 @@ CREATE TABLE sys_device (
   PRIMARY KEY (id)
 ) ;
 
-INSERT INTO sys_device(box_num, dev_num, hum_set_value, hum_return_diff, hum_adjust_value, hum_high_limit, temp_high_limit, temp_low_limit, heat_start_temp, heat_return_diff, dev_type, hum_w, heat_w, insert_dt)
-SELECT 1 AS box_num,d.dev_num,d.hum_set_value,d.hum_return_diff,d.hum_adjust_value,d.hum_high_limit,d.temp_high_limit,d.temp_low_limit
-	 ,d.heat_start_temp,d.heat_return_diff,d.dev_type,d.hum_w,d.heat_w,d.insert_dt
-FROM   dev_config d;
+-- INSERT INTO sys_device(box_num, dev_num, hum_set_value, hum_return_diff, hum_adjust_value, hum_high_limit, temp_high_limit, temp_low_limit, heat_start_temp, heat_return_diff, dev_type, hum_w, heat_w, insert_dt)
+-- SELECT 1 AS box_num,d.dev_num,d.hum_set_value,d.hum_return_diff,d.hum_adjust_value,d.hum_high_limit,d.temp_high_limit,d.temp_low_limit
+-- 	 ,d.heat_start_temp,d.heat_return_diff,d.dev_type,d.hum_w,d.heat_w,d.insert_dt
+-- FROM   dev_config d;
+
+
+
+
+
