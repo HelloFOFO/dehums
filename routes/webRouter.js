@@ -27,5 +27,11 @@ router.get('/admindevice', web.renderAdminDevice)
 router.get('/ajax/admin/devicelist', web.getAdminDeviceList)
 router.post('/ajax/admin/device', web.updateElseInsertDevice)
 
+//DEV_CONFIG表相关
+router.get('/admindevconfig', web.renderAdminDevConfig)
+router.get('/ajax/admin/devconfig', web.getAdminDevConfig)
+router.get('/ajax/admin/sysconfigupdatelog', web.getSysConfigUpdateLog)
+router.post('/ajax/admin/devconfig/recreate', web.recreateDevConfig)
+router.post('/ajax/admin/devconfig/signal', web.signalDevConfig)
 
 module.exports = router;

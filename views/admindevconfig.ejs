@@ -1,0 +1,347 @@
+<!-- BEGIN HEADER -->
+<%include widget/adminheader%>
+<!-- END HEADER -->
+
+<!--BEGIN LOAD PAGE LEVEL CSS STYLE-->
+<!-- IF YOU HAVE PAGE LEVEL CSS-->
+<link href="/css/pages/admindevice.css" rel="stylesheet" media="screen">
+<!--END LOAD PAGE LEVEL CSS STYLE-->
+
+<!-- BEGIN PAGE CONTAINER -->
+<div class="page-container">
+    <div class="page-content">
+        <!-- BEGIN PAGE CONTENT -->
+        <div class="container">
+            <div class="row" style="padding-left:15px;padding-right:15px;">
+                <div class="col-md-12 col-lg-12 dehum-content-title">
+                    DEV_CONFIG表维护
+                </div>
+
+                <div class="col-md-12 col-lg-12 margin-top-10">
+                    <button id="btn_update_dev_config" class="btn-primary btn-sm">更新dev_config表</button>
+                    <button id="btn_signal" class="btn-primary btn-sm">触发DEV_CONFIG更新信号</button>
+                </div>
+
+
+                <div class="col-lg-12 col-md-12"  style="margin-top: 30px;">
+                    <h4>系统信号表</h4>
+                </div>
+                <div class="col-md-12 col-lg-12">
+                    <table id="table_sys_config_update_log" class="display dataTable table table-bordered dt-head-center" style="table-layout: fixed;" cellspacing="0" width="100%">
+                        <thead>
+                        <tr>
+                            <th>编号</th>
+                            <th>全局配置表最新时间</th>
+                            <th>区域表最新时间</th>
+                            <th>机柜表最新时间</th>
+                            <th>除湿机表最新时间</th>
+                            <th>DEV_CONFIG表最新时间</th>
+                            <th>DEV_CONFIG表信号时间</th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+
+                <div class="col-lg-12 col-md-12" style="margin-top: 30px;">
+                    <h4>DEV_CONFIG表信息</h4>
+                </div>
+
+                <div class="col-md-12 col-lg-12">
+                    <table id="table_dev_config" class="display dataTable table table-bordered dt-head-center" style="table-layout: fixed;" cellspacing="0" width="100%">
+                        <thead>
+                        <tr>
+                            <th>区域编号</th>
+                            <th>机柜名称</th>
+                            <th>装置号</th>
+                            <th>湿度设定值</th>
+                            <th>湿度回差值</th>
+                            <th>湿度调整值</th>
+                            <th>湿度告警上限值</th>
+                            <th>温度告警上限值</th>
+                            <th>温度告警下限值</th>
+                            <th>加热启动温度</th>
+                            <th>加热回差值</th>
+                            <th>装置类型</th>
+                            <th>除湿机功率</th>
+                            <th>加热器功率</th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="div_dialog_result"></div>
+        <!-- END PAGE CONTENT -->
+    </div>
+</div>
+<!-- END PAGE CONTAINER -->
+
+
+
+<!-- BEGIN FOOTER -->
+<%include widget/adminfooter%>
+<!-- END FOOTER -->
+
+
+<!-- BEGIN PAGE LEVEL SCRIPTS IF NEEDED-->
+<script type="text/javascript" src="/assets/plugins/validator.min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/underscore-min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/moment.min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/jquery-ui/jquery-ui.min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/jquery-datatable/js/jquery.dataTables.min.js"></script>
+<!-- END PAGE LEVEL SCRIPTS IF NEEDED -->
+
+<script>
+    function initMe() {
+        // 结果提示框，用于各种处理的返回
+        $("#div_dialog_result").dialog({autoOpen:false});
+
+        function reload(){
+            window.location.reload();
+        }
+
+        $('#btn_update_dev_config').click(function(){
+            let url = "/ajax/admin/devconfig/recreate"
+
+            $.ajax({
+                url:url,
+                async:true,
+                method:'POST'
+            }).done(function(data){
+                showResult("生成新DEV_CONFIG表",data.errorMsg);
+                if(data.errorCode == 200){
+                    setTimeout(reload, 2000)
+                }
+            });
+        })
+
+        $('#btn_signal').click(function(){
+            let url = "/ajax/admin/devconfig/signal"
+
+            $.ajax({
+                url:url,
+                async:true,
+                method:'POST'
+            }).done(function(data){
+                showResult("触发DEV_CONFIG更新信号",data.errorMsg);
+                if(data.errorCode == 200){
+                    setTimeout(reload, 2000)
+                }
+            });
+        })
+
+
+        let tableSysConfigUpdateLog = $('#table_sys_config_update_log').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "bLengthChange": false,
+                "info": false,
+                "ajax": {
+                    "url": "/ajax/admin/sysconfigupdatelog"
+                },
+                "searching": false,
+                "ordering": false,
+                "autoWidth":false,
+                "pageLength":20,
+                "scrollCollapse":false,
+                "columnDefs":[
+                    {
+                        "targets": 0,
+                        "data":"id",
+                        "width":"7%",
+                        "class": "dehum-td-align-center"
+                    },
+                    {
+                        "targets":1,
+                        "data":"global_config_update_time",
+                        "width":"15%",
+                        "searchable":false,
+                        "render": function(data,type,row){
+                            return  moment(data).format("YYYY-MM-DD HH:mm:ss");
+                        },
+                        "class": "dehum-td-align-center"
+                    },
+                    {
+                        "targets":2,
+                        "data":"sys_area_update_time",
+                        "width":"15%",
+                        "searchable":false,
+                        "render": function(data,type,row){
+                            return  moment(data).format("YYYY-MM-DD HH:mm:ss");
+                        },
+                        "class": "dehum-td-align-center"
+                    },
+                    {
+                        "targets":3,
+                        "data":"sys_box_update_time",
+                        "width":"15%",
+                        "searchable":false,
+                        "render": function(data,type,row){
+                            return  moment(data).format("YYYY-MM-DD HH:mm:ss");
+                        },
+                        "class": "dehum-td-align-center"
+                    },
+                    {
+                        "targets":4,
+                        "data":"sys_device_update_time",
+                        "width":"15%",
+                        "searchable":false,
+                        "render": function(data,type,row){
+                            return  moment(data).format("YYYY-MM-DD HH:mm:ss");
+                        },
+                        "class": "dehum-td-align-center"
+                    },
+                    {
+                        "targets":5,
+                        "data":"dev_config_update_time",
+                        "width":"20%",
+                        "searchable":false,
+                        "render": function(data,type,row){
+                            let show_time = moment(data).format("YYYY-MM-DD HH:mm:ss");
+                            let status = moment(row['global_config_update_time']).isBefore(moment(data))
+                                      && moment(row['sys_area_update_time']).isBefore(moment(data))
+                                      && moment(row['sys_box_update_time']).isBefore(moment(data))
+                                      && moment(row['sys_device_update_time']).isBefore(moment(data)) ? "正常":"需要更新"
+                            return show_time+"("+status+")";
+                        },
+                        "class": "dehum-td-align-center dehum-color-red"
+
+                    },
+                    {
+                        "targets":6,
+                        "data":"dev_config_signal_time",
+                        "width":"20%",
+                        "searchable":false,
+                        "render": function(data,type,row){
+                            let show_time = moment(data).format("YYYY-MM-DD HH:mm:ss");
+                            let status = moment(row['dev_config_update_time']).isBefore(moment(data)) ? "正常":"需要触发"
+                            return show_time+"("+status+")";
+                        },
+                        "class": "dehum-td-align-center"
+                    }
+                ]
+            }
+        );
+
+        let tableDevConfig = $('#table_dev_config').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "bLengthChange": false,
+                "info": true,
+                "ajax": {
+                    "url": "/ajax/admin/devconfig"
+                },
+                "searching": false,
+                "ordering": false,
+                "autoWidth":false,
+                "pageLength":20,
+                "scrollCollapse":false,
+                "columnDefs":[
+                    {
+                        "targets": 0,
+                        "data":"area_num",
+                        "width":"8%",
+                    },
+                    {
+                        "targets": 1,
+                        "data":"box_name",
+                        "width":"8%",
+                    },
+                    {
+                        "targets": 2,
+                        "data":"dev_num",
+                        "width":"6%",
+                        "class": "dehum-td-align-center"
+                    },
+                    {
+                        "targets": 3,
+                        "data":"hum_set_value",
+                        "width":"6%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 4,
+                        "data":"hum_return_diff",
+                        "width":"6%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 5,
+                        "data":"hum_adjust_value",
+                        "width":"6%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 6,
+                        "data":"hum_high_limit",
+                        "width":"8%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 7,
+                        "data":"temp_high_limit",
+                        "width":"8%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 8,
+                        "data":"temp_low_limit",
+                        "width":"8%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 9,
+                        "data":"heat_start_temp",
+                        "width":"6%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 10,
+                        "data":"heat_return_diff",
+                        "width":"6%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 11,
+                        "render":function(data,type,row){
+                            return row.dev_type == 0 ? 'I型':'II型';
+                        },
+                        "width":"6%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 12,
+                        "data":"hum_w",
+                        "width":"6%",
+                        "class": "dehum-td-align-center"
+                    },
+
+                    {
+                        "targets": 13,
+                        "data":"heat_w",
+                        "width":"6%",
+                        "class": "dehum-td-align-center"
+                    }
+                ]
+            }
+        );
+    }
+
+    jQuery(document).ready(function() {
+        initMe()
+    });
+</script>
+
+
+</body>
+</html>

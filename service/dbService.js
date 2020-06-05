@@ -1267,3 +1267,244 @@ exports.insertDevice = function(device, cb){
         }
     )
 }
+
+
+// 返回适配datatable的dev_config表
+exports.getAdminDevConfig = function(param, cb){
+    /*这是datatable自带的变量*/
+    let draw   = param.sEcho;            //这个是请求时候带过来请求编号，原封不动的还给client
+    let start  = parseInt(param.start);  //起始行数(不是起始页数哦)，从0开始
+    let length = parseInt(param.length); //每页的数据条数
+
+    async.auto({
+            checkParam: function (cb) {
+                let whereClause = "";
+                // 这儿没有额外的查询条件
+                cb(null,whereClause);
+            },
+            total: ['checkParam', function (cb1, results) {
+                pool.getReadOnlyConnection(function(error,conn) {
+                    if (error) {
+                        cb1("error_db_connect", null);
+                    }
+                    else {
+                        let sql = heredoc( function () {/*
+                         select count(1) AS cnt
+                         from
+                         (
+                           SELECT area_num,box_num
+                           FROM   dev_config
+                         ) a
+                         where  1 = 1
+                         __whereClause__
+                         */});
+                        sql = sql.replace(/__whereClause__/,results.checkParam);
+                        conn.query( sql, function(err,rows){
+                            conn.release();
+                            if(err){
+                                console.log(sql)
+                                cb1("error_db_query",null)
+                            }
+                            else{
+                                cb1(null,rows[0]['cnt'])
+                            }
+                        });
+
+                    }
+                });
+            }],
+            data: ['checkParam', function (cb2, results) {
+                pool.getReadOnlyConnection(function(error,conn) {
+                    if (error) {
+                        cb2("error_db_connect", null);
+                    }
+                    else {
+                        let sql = heredoc( function () {/*
+                         SELECT * FROM
+                         (
+                           SELECT area_num, box_num, box_name, dev_num, box_ip, box_port, hum_set_value, hum_return_diff, hum_adjust_value
+                                , hum_high_limit, temp_high_limit, temp_low_limit, heat_start_temp, heat_return_diff, dev_type
+                                , hum_w, heat_w, insert_dt, update_dt
+                           FROM   dev_config
+                         ) a
+                         where  1 = 1
+                         __whereClause__
+                         order by area_num asc,box_num asc,dev_num asc
+                         limit ?,?
+                         */});
+                        sql = sql.replace(/__whereClause__/,results.checkParam);
+                        let sqlParams = [start,length];
+                        conn.query( sql,sqlParams, function(err,rows){
+                            conn.release();
+                            if(err){
+                                cb2("error_db_query",null);
+                                console.log(sql);
+                            }
+                            else{
+                                cb2(null,rows);
+                            }
+                        });
+                    }
+                });
+            }]
+        },function(err,results){
+            if(err){
+                console.log(err)
+                cb({"errorCode":-1,"errorMsg":'获取DEV_CONFIG信息失败'},null);
+            }
+            else{
+                let data = {draw:draw,data:results.data,recordsTotal:results.total,recordsFiltered:results.total};
+                cb(null,data);
+            }
+        }
+    );
+}
+
+// 返回适配datatable的 sys_config_update_log 表
+exports.getSysConfigUpdateLog = function(param, cb){
+    /*这是datatable自带的变量*/
+    let draw   = param.sEcho;            //这个是请求时候带过来请求编号，原封不动的还给client
+    let start  = parseInt(param.start);  //起始行数(不是起始页数哦)，从0开始
+    let length = parseInt(param.length); //每页的数据条数
+
+    async.auto({
+            checkParam: function (cb) {
+                let whereClause = "";
+                // 这儿没有额外的查询条件
+                cb(null,whereClause);
+            },
+            total: ['checkParam', function (cb1, results) {
+                pool.getReadOnlyConnection(function(error,conn) {
+                    if (error) {
+                        cb1("error_db_connect", null);
+                    }
+                    else {
+                        let sql = heredoc( function () {/*
+                         select count(1) AS cnt
+                         from
+                         (
+                           SELECT id
+                           FROM   sys_config_update_log
+                         ) a
+                         where  1 = 1
+                         __whereClause__
+                         */});
+                        sql = sql.replace(/__whereClause__/,results.checkParam);
+                        conn.query( sql, function(err,rows){
+                            conn.release();
+                            if(err){
+                                console.log(sql)
+                                cb1("error_db_query",null)
+                            }
+                            else{
+                                cb1(null,rows[0]['cnt'])
+                            }
+                        });
+
+                    }
+                });
+            }],
+            data: ['checkParam', function (cb2, results) {
+                pool.getReadOnlyConnection(function(error,conn) {
+                    if (error) {
+                        cb2("error_db_connect", null);
+                    }
+                    else {
+                        let sql = heredoc( function () {/*
+                         SELECT * FROM
+                         (
+                           SELECT id, global_config_update_time, sys_area_update_time, sys_box_update_time, sys_device_update_time
+                                , dev_config_update_time, dev_config_signal_time, insert_dt, update_dt
+                           FROM   sys_config_update_log
+                         ) a
+                         where  1 = 1
+                         __whereClause__
+                         order by id
+                         limit ?,?
+                         */});
+                        sql = sql.replace(/__whereClause__/,results.checkParam);
+                        let sqlParams = [start,length];
+                        conn.query( sql,sqlParams, function(err,rows){
+                            conn.release();
+                            if(err){
+                                cb2("error_db_query",null);
+                                console.log(sql);
+                            }
+                            else{
+                                cb2(null,rows);
+                            }
+                        });
+                    }
+                });
+            }]
+        },function(err,results){
+            if(err){
+                console.log(err)
+                cb({"errorCode":-1,"errorMsg":'获取DEV_CONFIG信息失败'},null);
+            }
+            else{
+                let data = {draw:draw,data:results.data,recordsTotal:results.total,recordsFiltered:results.total};
+                cb(null,data);
+            }
+        }
+    );
+}
+
+// 重新生成dev_config表，数据库里执行spb_recreate_dev_config
+exports.recreateDevConfig = function(cb){
+    async.auto(
+        {
+            doUpdate:function(cb){
+                pool.getConnection(function (error, conn) {
+                    if (error) {
+                        cb("数据库连接失败");
+                    } else {
+                        let sql = "CALL spb_recreate_dev_config()"
+                        conn.query(sql, function (err) {
+                            conn.release();
+                            if (err) {
+                                cb("DEV_CONFIG重新生成失败");
+                            }
+                            else {
+                                cb(null, "DEV_CONFIG重新生成成功")
+                            }
+                        })
+                    }
+                })
+            }
+        },
+        function(err, results){
+            cb(err, results.doUpdate)
+        }
+    )
+}
+
+
+// 生成dev_config表更新信号，数据库里执行 spb_signal_dev_config
+exports.signalDevConfig = function(cb){
+    async.auto(
+        {
+            doUpdate:function(cb){
+                pool.getConnection(function (error, conn) {
+                    if (error) {
+                        cb("数据库连接失败");
+                    } else {
+                        let sql = "CALL spb_signal_dev_config()"
+                        conn.query(sql, function (err) {
+                            conn.release();
+                            if (err) {
+                                cb("DEV_CONFIG更新信号生成失败");
+                            }
+                            else {
+                                cb(null, "DEV_CONFIG更新信号生成成功")
+                            }
+                        })
+                    }
+                })
+            }
+        },
+        function(err, results){
+            cb(err, results.doUpdate)
+        }
+    )
+}

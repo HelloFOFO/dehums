@@ -21,6 +21,7 @@ dev_config_update_time datetime,
 insert_dt datetime,
 update_dt timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+ALTER TABLE sys_config_update_log ADD dev_config_signal_time datetime AFTER dev_config_update_time;
 
 
 
@@ -75,6 +76,46 @@ CREATE TABLE sys_device (
 -- SELECT 1 AS box_num,d.dev_num,d.hum_set_value,d.hum_return_diff,d.hum_adjust_value,d.hum_high_limit,d.temp_high_limit,d.temp_low_limit
 -- 	 ,d.heat_start_temp,d.heat_return_diff,d.dev_type,d.hum_w,d.heat_w,d.insert_dt
 -- FROM   dev_config d;
+
+-- dev_config表的更新日志
+CREATE TABLE sys_dev_config_recreate_log(
+batch_id int NOT NULL AUTO_INCREMENT,
+recreate_time timestamp,
+PRIMARY KEY(batch_id)
+);
+
+ -- dev_config 表的备份
+ -- 每次重新生成时，
+ -- 1、先把dev_config表的旧值插入sys_dev_config_bak，value_old_or_new设置为old；
+ -- 2、清空dev_config表
+ -- 3、根据sys_area/box/device表重新生成dev_config
+ -- 4、新插入的值插入sys_dev_config_bak，value_old_or_new设置为new；
+CREATE TABLE sys_dev_config_bak (
+  id int NOT NULL AUTO_INCREMENT,
+  batch_id int,
+  value_old_or_new char(3),
+  area_num int(11) NOT NULL DEFAULT '0',
+  box_num int(11) NOT NULL DEFAULT '0',
+  box_name varchar(32) NOT NULL,
+  dev_num int(11) NOT NULL DEFAULT '0',
+  box_ip varchar(16) NOT NULL,
+  box_port int(11) NOT NULL,
+  hum_set_value int(11) NOT NULL,
+  hum_return_diff int(11) NOT NULL,
+  hum_adjust_value int(11) NOT NULL,
+  hum_high_limit int(11) NOT NULL,
+  temp_high_limit int(11) NOT NULL,
+  temp_low_limit int(11) NOT NULL,
+  heat_start_temp int(11) NOT NULL DEFAULT '0',
+  heat_return_diff int(11) NOT NULL DEFAULT '0',
+  dev_type int(11) NOT NULL DEFAULT '0',
+  hum_w int(11) NOT NULL DEFAULT '30',
+  heat_w int(11) NOT NULL DEFAULT '30',
+  insert_dt datetime DEFAULT NULL,
+  update_dt timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+) ;
+
 
 
 

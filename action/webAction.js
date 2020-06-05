@@ -147,7 +147,6 @@ exports.updateElseInsertBox = function(req, res){
 
 
 
-
 exports.renderAdminDevice = function(req, res){
     res.render('admindevice', {title: '除湿机管理后台-除湿机管理'})
 }
@@ -187,4 +186,61 @@ exports.updateElseInsertDevice = function(req, res){
             res.json(data)
         })
     }
+}
+
+
+exports.renderAdminDevConfig = function(req, res){
+    res.render('admindevconfig', {title: '除湿机管理后台-DEV_CONFIG管理'})
+}
+
+// 返回适配datatable的dev_config表
+exports.getAdminDevConfig = function(req, res){
+    let param = req.query;  //请求上来的参数
+    dbService.getAdminDevConfig(param, function(err, data){
+        if(err){
+            res.json(err);
+        }
+        else{
+            res.json(data);
+        }
+    })
+}
+
+// 返回适配datatable的sys_config_update_log表
+exports.getSysConfigUpdateLog = function(req, res){
+    let param = req.query;  //请求上来的参数
+    dbService.getSysConfigUpdateLog(param, function(err, data){
+        if(err){
+            res.json(err);
+        }
+        else{
+            res.json(data);
+        }
+    })
+}
+
+//重新生成dev_config表
+exports.recreateDevConfig = function(req, res){
+    dbService.recreateDevConfig(
+        function(err, result){
+            let data = {
+                errorCode: (err) ? -1 : 200,
+                errorMsg: (err) ? err : result
+            }
+            res.json(data)
+        }
+    )
+}
+
+//生成dev_config更新信号
+exports.signalDevConfig = function(req, res){
+    dbService.signalDevConfig(
+        function(err, result){
+            let data = {
+                errorCode: (err) ? -1 : 200,
+                errorMsg: (err) ? err : result
+            }
+            res.json(data)
+        }
+    )
 }

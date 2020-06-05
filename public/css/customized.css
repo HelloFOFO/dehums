@@ -48,9 +48,14 @@ table.dataTable tbody tr{
 /*}*/
 
 .dataTables_wrapper .dataTables_paginate .paginate_button.disabled{
-    color: white !important;
+    /*color: white !important;*/
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button{
-    color: white !important;
+    /*color: white !important;*/
+    color: #4ecde2 !important;
+}
+
+.dataTables_wrapper .dataTables_info{
+    color: #4ecde2
 }
