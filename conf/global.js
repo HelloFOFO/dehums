@@ -11,8 +11,8 @@ if(debug){
 var db = {};
 if(debug){
     //非生产环境
-    db.slaveHost = process.env.db_slaveHost||'106.14.10.98';
-    db.host      = process.env.db_host||'106.14.10.98';
+    db.slaveHost = process.env.db_slaveHost||'192.168.1.3';
+    db.host      = process.env.db_host||'192.168.1.3';
     db.user      = 'gywsd';
     db.password  = 'gywsd@123qwe';
     db.database  = 'gywsd';

@@ -2,4 +2,5 @@ node_modules/
 .idea/
 npm-debug.log
 conf/.debug
+conf/global.js
 .DS_Store
