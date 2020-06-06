@@ -74,3 +74,4 @@ FROM   sys_device d
 
 UPDATE sys_config_update_log SET dev_config_update_time = NULL;
 
+SELECT * FROM sys_config_update_log;
