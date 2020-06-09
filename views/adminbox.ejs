@@ -23,9 +23,8 @@
                     <table id="tb_box_list" class="display dataTable table table-bordered dt-head-center" style="table-layout: fixed;" cellspacing="0" width="100%">
                         <thead>
                         <tr>
-                            <th>编号</th>
-                            <th>机柜名称</th>
                             <th>区域名称</th>
+                            <th>柜名</th>
                             <th>IP</th>
                             <th>端口</th>
                             <th>插入日期</th>
@@ -40,7 +39,7 @@
         <div id="div_modify_box">
             <div class="dehum-div-ui-dialog">
                 <span>
-                    <label>编号</label>
+                    <label>柜号</label>
                     <span id="boxNum"></span>
                 </span>
             </div>
@@ -137,7 +136,7 @@
         $('#div_modify_box').dialog({
             autoOpen: false,
             title:"编辑机柜",
-            draggable:false,
+            draggable:true,
             modal:true,
             buttons: [
                 {
@@ -207,7 +206,7 @@
                 "processing": true,
                 "serverSide": true,
                 "bLengthChange": false,
-                "info": false,
+                "info": true,
                 "ajax": {
                     "url": "/ajax/admin/boxlist"
                 },
@@ -218,38 +217,31 @@
                 "scrollCollapse":false,
                 "columnDefs":[
                     {
-                        "targets":[0],
-                        "data":"box_num",
-                        "width":"8%",
-                        "searchable":false,
-                        "class": "dehum-td-align-center"
+                        "targets":[1],
+                        "data":"area_name",
+                        "width":"10%",
+                        "searchable":false
                     },
                     {
-                        "targets":[1],
+                        "targets":[0],
                         "data":"box_name",
                         "width":"10%",
                         "searchable":false
                     },
                     {
                         "targets":[2],
-                        "data":"area_name",
-                        "width":"10%",
-                        "searchable":false
-                    },
-                    {
-                        "targets":[3],
                         "data":"box_ip",
                         "width":"16%",
                         "searchable":false
                     },
                     {
-                        "targets":[4],
+                        "targets":[3],
                         "data":"box_port",
                         "width":"10%",
                         "searchable":false
                     },
                     {
-                        "targets":[5],
+                        "targets":[4],
                         "data":"insert_dt",
                         "width":"17%",
                         "searchable":false,
@@ -259,7 +251,7 @@
                         "class": "dehum-td-align-center"
                     },
                     {
-                        "targets":[6],
+                        "targets":[5],
                         "data":"update_dt",
                         "width":"17%",
                         "searchable":false,
@@ -269,7 +261,7 @@
                         "class": "dehum-td-align-center"
                     },
                     {
-                        "targets":[7],
+                        "targets":[6],
                         "searchable":false,
                         "width":"10%",
                         "render":function(data,type,row){
@@ -284,16 +276,21 @@
 
         $("#tb_box_list tbody").on("click", ".btn-editor", function () {
             //获取行
-            let row = $("#tb_box_list tr").index($(this).parent("td").parent("tr"));
+            // let row = $("#tb_box_list tr").index($(this).parent("td").parent("tr"));
+            let rowIndex = $("#tb_box_list tr").index($(this).parent("td").parent("tr"));
 
             //获取某列（从0列开始计数）的值
-            let boxNum = $("#tb_box_list").find("tr").eq(row).find("td").eq(0).text();
+            let data = $('#tb_box_list').DataTable().row(rowIndex-1).data();
 
-            let boxName = $("#tb_box_list").find("tr").eq(row).find("td").eq(1).text();
-            let areaName = $("#tb_box_list").find("tr").eq(row).find("td").eq(2).text();
 
-            let boxIP = $("#tb_box_list").find("tr").eq(row).find("td").eq(3).text();
-            let boxPort = $("#tb_box_list").find("tr").eq(row).find("td").eq(4).text();
+            //获取某列（从0列开始计数）的值
+            let boxNum = data.box_num;
+
+            let boxName = data.box_name;
+            let areaName = data.area_name;
+
+            let boxIP = data.box_ip;
+            let boxPort = data.box_port;
 
             $('#boxNum').text(boxNum)
             $('#boxName').val(boxName)

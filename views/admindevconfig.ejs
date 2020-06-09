@@ -18,8 +18,8 @@
                 </div>
 
                 <div class="col-md-12 col-lg-12 margin-top-10">
-                    <button id="btn_update_dev_config" class="btn-primary btn-sm">更新dev_config表</button>
-                    <button id="btn_signal" class="btn-primary btn-sm">触发DEV_CONFIG更新信号</button>
+                    <button id="btn_update_dev_config" class="btn-primary btn-sm">更新设置</button>
+                    <button id="btn_signal" class="btn-primary btn-sm">重启软件</button>
                 </div>
 
 
@@ -43,7 +43,7 @@
                 </div>
 
                 <div class="col-lg-12 col-md-12" style="margin-top: 30px;">
-                    <h4>DEV_CONFIG表信息</h4>
+                    <h4>DEV_CONFIG表当前信息</h4>
                 </div>
 
                 <div class="col-md-12 col-lg-12">
@@ -72,6 +72,11 @@
         </div>
 
         <div id="div_dialog_result"></div>
+        <div id="div_dialog_doublecheck">
+            <span>请在下面的框中输入：</span><span id="span_doublecheck_code" style="color:red; font-size: 18px;">ABB</span>
+            <br>
+            <input id="input_doublecheck_code" type="text" style="color: black">
+        </div>
         <!-- END PAGE CONTENT -->
     </div>
 </div>
@@ -93,42 +98,91 @@
 <!-- END PAGE LEVEL SCRIPTS IF NEEDED -->
 
 <script>
+    function reload(){
+        window.location.reload();
+    }
+
+    function doublecheck(code, cb){
+        // alert(code)
+        $('#span_doublecheck_code').text(code)
+        $('#div_dialog_doublecheck').dialog(
+            {
+                title: "请确认你的操作",
+                modal: true,
+                resizable: false,
+                buttons: {
+                    "取消": function() {
+                        $(this).dialog("close");
+                    },
+                    "确认": function() {
+                        if($('#input_doublecheck_code').val()  == $('#span_doublecheck_code').text()){
+                            cb.call();//方法回调
+                            $(this).dialog("close");
+                        }
+                        else{
+                            alert('请输入正确的确认码')
+                        }
+
+                    }
+                }
+            }
+        )
+        $("#div_dialog_doublecheck").dialog("open");
+    }
+
+    function updateConfig(){
+        let url = "/ajax/admin/devconfig/recreate"
+
+        $.ajax({
+            url:url,
+            async:true,
+            method:'POST'
+        }).done(function(data){
+            showResult("更新配置",data.errorMsg);
+            if(data.errorCode == 200){
+                setTimeout(reload, 2000)
+            }
+        });
+    }
+
+    function restartSys(){
+        let url = "/ajax/admin/devconfig/signal"
+
+        $.ajax({
+            url:url,
+            async:true,
+            method:'POST'
+        }).done(function(data){
+            showResult("重启软件",data.errorMsg);
+            if(data.errorCode == 200){
+                setTimeout(reload, 2000)
+            }
+        });
+    }
+
     function initMe() {
         // 结果提示框，用于各种处理的返回
         $("#div_dialog_result").dialog({autoOpen:false});
+        $('#div_dialog_doublecheck').dialog({autoOpen:false})
 
-        function reload(){
-            window.location.reload();
-        }
 
         $('#btn_update_dev_config').click(function(){
-            let url = "/ajax/admin/devconfig/recreate"
+            // alert('TO UPDATECONFIG')
+            let randomNum = ('000000' + Math.floor(Math.random() * 999999)).slice(-6)
 
-            $.ajax({
-                url:url,
-                async:true,
-                method:'POST'
-            }).done(function(data){
-                showResult("生成新DEV_CONFIG表",data.errorMsg);
-                if(data.errorCode == 200){
-                    setTimeout(reload, 2000)
-                }
-            });
+            doublecheck(randomNum, function(){
+                // alert('开始更新配置')
+                updateConfig()
+            })
         })
 
         $('#btn_signal').click(function(){
-            let url = "/ajax/admin/devconfig/signal"
-
-            $.ajax({
-                url:url,
-                async:true,
-                method:'POST'
-            }).done(function(data){
-                showResult("触发DEV_CONFIG更新信号",data.errorMsg);
-                if(data.errorCode == 200){
-                    setTimeout(reload, 2000)
-                }
-            });
+            // alert('TO RESTART')
+            let randomNum = ('000000' + Math.floor(Math.random() * 999999)).slice(-6)
+            doublecheck(randomNum, function(){
+                // alert('开始重启软件')
+                restartSys()
+            })
         })
 
 

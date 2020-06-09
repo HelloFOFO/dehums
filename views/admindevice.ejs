@@ -25,7 +25,7 @@
                         <tr>
                             <th style="display: none">编号</th>
                             <th>区域名称</th>
-                            <th>机柜名称</th>
+                            <th>柜名</th>
                             <th>装置号</th>
                             <th>湿度设定值</th>
                             <th>湿度回差值</th>
@@ -298,7 +298,7 @@
         $('#div_modify_device').dialog({
             autoOpen: false,
             title:"编辑除湿机",
-            draggable:false,
+            draggable:true,
             modal:true,
             width: 800,
             buttons: [
@@ -381,7 +381,7 @@
                 "processing": true,
                 "serverSide": true,
                 "bLengthChange": false,
-                "info": false,
+                "info": true,
                 "ajax": {
                     "url": "/ajax/admin/devicelist"
                 },
