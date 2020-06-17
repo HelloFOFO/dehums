@@ -18,36 +18,46 @@
                 <div class="col-lg-4 col-md-4">
                     <div class="dehum-content-subtitle dehum-div-border">
                         <span>在线台数/总台数</span>
-                        <span class="dehum-content-subtitle-value">12/120</span>
+                        <span class="dehum-content-subtitle-value"><%- summaryData.total_valid%>/<%- summaryData.total%></span>
                     </div>
-                    <div class="dehum-div-border">
-                        asfasd
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-4">
-                    <div class="dehum-content-subtitle dehum-div-border">在线总台数</div>
-                    <div class="dehum-div-border">
-                        asfasd
+                    <div class="dehum-div-border text-center">
+                        <div id="div_chart_1" style="height:150px; width: 100%;">
+                        </div>
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-4">
-                    <div class="dehum-content-subtitle dehum-div-border">在线总台数</div>
+                    <div class="dehum-content-subtitle dehum-div-border">
+                        <span>工作台数/总台数</span>
+                        <span class="dehum-content-subtitle-value"><%- summaryData.total_working%>/<%- summaryData.total%></span>
+                    </div>
                     <div class="dehum-div-border">
-                        asfasd
+                        <div id="div_chart_2" style="height:150px; width: 100%;">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <div class="dehum-content-subtitle dehum-div-border" style="min-height: 180px;">
+                        <span>报警数量</span>
+                        <span class="dehum-content-subtitle-value"><%- summaryData.cnt_alarms%></span>
                     </div>
                 </div>
             </div>
             <div class="row" style="margin-top: 15px;">
                 <div class="col-lg-6 col-md-6">
-                    <div class="dehum-content-subtitle dehum-div-border">在线总台数</div>
+                    <div class="dehum-content-subtitle dehum-div-border">全站除湿时间/用电</div>
                     <div class="dehum-div-border">
-                        asfasd
+                        <div id="div_chart_3" style="height:350px; width: 100%;">
+
+                        </div>
                     </div>
                 </div>
                 <div class="col-lg-6 col-md-6">
-                    <div class="dehum-content-subtitle dehum-div-border">在线总台数</div>
+                    <div class="dehum-content-subtitle dehum-div-border">全站加热时间/用电</div>
                     <div class="dehum-div-border">
-                        asfasd
+                        <div id="div_chart_4" style="height:350px; width: 100%;">
+
+                        </div>
                     </div>
                 </div>
             </div>
@@ -58,10 +68,246 @@
 <!-- END PAGE CONTAINER -->
 
 
+
 <!-- BEGIN FOOTER -->
 <%include widget/footer%>
 <!-- END FOOTER -->
 
+
+<script>
+    // 这儿偷懒一下，把后端传过来的对象直接赋值给js对象
+    let summaryData = JSON.parse('<%-JSON.stringify(summaryData)%>')
+
+
+    function drawChart1(){
+        let char1 = echarts.init(document.getElementById('div_chart_1'), 'dark');
+        let option1 = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{b}: {c} ({d}%)'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 10,
+                data: ['在线台数', '下线台数']
+            },
+            series: [
+                {
+                    name: '除湿机数量',
+                    type: 'pie',
+                    radius: ['50%', '70%'],
+                    emphasis: {
+                        label: {
+                            show: true,
+                            fontSize: '16',
+                            fontWeight: 'bold'
+                        }
+                    },
+                    label: {
+                        show: false ,
+                        position: 'center'
+                    },
+                    data: [
+                        {value: summaryData.total_valid, name: '在线台数'},
+                        {value: summaryData.total-summaryData.total_valid, name: '下线台数'}
+                    ]
+                }
+            ]
+        }
+        char1.setOption(option1, true)
+    }
+
+    function drawChart2(){
+        let char2 = echarts.init(document.getElementById('div_chart_2'), 'dark');
+        let option2 = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{b}: {c} ({d}%)'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 10,
+                data: ['工作台数', '待机台数']
+            },
+            series: [
+                {
+                    name: '除湿机数量',
+                    type: 'pie',
+                    radius: ['50%', '70%'],
+                    emphasis: {
+                        label: {
+                            show: true,
+                            fontSize: '16',
+                            fontWeight: 'bold'
+                        }
+                    },
+                    label: {
+                        show: false ,
+                        position: 'center'
+                    },
+                    data: [
+                        {value: summaryData.total_working, name: '工作台数'},
+                        {value: summaryData.total-summaryData.total_working, name: '待机台数'}
+                    ]
+                }
+            ]
+        }
+        char2.setOption(option2, true)
+    }
+
+    function drawCharUsage(){
+        let calDt = []
+        let dehumTime = []
+        let dehumWH = []
+        let heatTime = []
+        let heatWH = []
+
+        let chart3 = echarts.init(document.getElementById('div_chart_3'), 'dark');
+        let chart4 = echarts.init(document.getElementById('div_chart_4'), 'dark');
+        let option3 = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    crossStyle: {
+                        color: '#999'
+                    }
+                }
+            },
+            legend: {
+                data: ['除湿时间', '除湿用电']
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    data: calDt,
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+                    name: '时长',
+                    min: 0,
+                    max: 1800,
+                    interval: 300,
+                    axisLabel: {
+                        formatter: '{value} s'
+                    }
+                },
+                {
+                    type: 'value',
+                    name: '电量',
+                    min: 0,
+                    max: 30,
+                    interval: 5,
+                    axisLabel: {
+                        formatter: '{value} Wh'
+                    }
+                }
+            ],
+            series: [
+                {
+                    name: '除湿时间',
+                    type: 'bar',
+                    data: dehumTime
+                },
+                {
+                    name: '除湿用电',
+                    type: 'line',
+                    data: dehumWH
+                }
+            ]
+        }
+
+        let option4 = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    crossStyle: {
+                        color: '#999'
+                    }
+                }
+            },
+            legend: {
+                data: ['加热时间', '加热用电']
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    data: calDt,
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+                    name: '时长',
+                    min: 0,
+                    max: 1800,
+                    interval: 300,
+                    axisLabel: {
+                        formatter: '{value} s'
+                    }
+                },
+                {
+                    type: 'value',
+                    name: '电量',
+                    min: 0,
+                    max: 30,
+                    interval: 5,
+                    axisLabel: {
+                        formatter: '{value} kWh'
+                    }
+                }
+            ],
+            series: [
+                {
+                    name: '加热时间',
+                    type: 'bar',
+                    data: heatTime
+                },
+                {
+                    name: '加热用电',
+                    type: 'line',
+                    data: heatWH
+                }
+            ]
+        }
+
+        $.getJSON('/ajax/summaryUsage', function(data){
+            let chartData = data.data
+            for(var i in chartData){
+                calDt.push(moment(chartData[i].cal_dt).format('YYYY-MM-DD'))
+                dehumTime.push(chartData[i].dehum_total_time)
+                dehumWH.push(chartData[i].dehum_total_wh)
+                heatTime.push(chartData[i].heat_total_time)
+                heatWH.push(chartData[i].heat_total_wh)
+            }
+
+            chart3.setOption(option3, true)
+            chart4.setOption(option4, true)
+
+        })
+
+
+
+    }
+
+
+    function initPage(){
+        drawChart1()
+        drawChart2()
+        drawCharUsage()
+    }
+
+    $(document).ready(initPage)
+</script>
 
 
 </body>

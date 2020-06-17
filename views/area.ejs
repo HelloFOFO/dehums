@@ -1,0 +1,254 @@
+<!-- BEGIN HEADER -->
+<%include widget/header%>
+<!-- END HEADER -->
+
+
+
+<!--BEGIN LOAD PAGE LEVEL CSS STYLE-->
+<link href="/css/pages/area.css" rel="stylesheet" media="screen">
+<!--END LOAD PAGE LEVEL CSS STYLE-->
+
+<!-- BEGIN PAGE CONTAINER -->
+<div class="page-container">
+    <div class="page-content">
+        <!-- BEGIN PAGE CONTENT -->
+        <div class="container" style="min-height: 800px">
+            <div class="dehum-content-title "><%- summaryData.area_name%>运行工况</div>
+            <div class="row" style="margin-top: 15px;">
+                <div class="col-lg-4 col-md-4">
+                    <div class="dehum-content-subtitle dehum-div-border">
+                        <span>在线台数/总台数</span>
+                        <span class="dehum-content-subtitle-value"><%- summaryData.total_valid%>/<%- summaryData.total%></span>
+                    </div>
+                    <div class="dehum-div-border text-center">
+                        <div id="div_chart_1" style="height:150px; width: 100%;">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <div class="dehum-content-subtitle dehum-div-border">
+                        <span>工作台数/总台数</span>
+                        <span class="dehum-content-subtitle-value"><%- summaryData.total_working%>/<%- summaryData.total%></span>
+                    </div>
+                    <div class="dehum-div-border">
+                        <div id="div_chart_2" style="height:150px; width: 100%;">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <div class="dehum-content-subtitle dehum-div-border" style="min-height: 180px;">
+                        <span>报警数量</span>
+                        <span class="dehum-content-subtitle-value"><%- summaryData.cnt_alarms%></span>
+                    </div>
+                </div>
+            </div>
+            <div id="results-body" class="row" style="margin-top: 15px;">
+                <div class="col-lg-12 col-md-12">
+                <div class="div-search-result">
+                    <!--<div>替换除湿机列表</div>-->
+                </div>
+                <div style="clear:both"></div>
+                <div id="results-page">
+                    <ul class="pagination bootpag">
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- END PAGE CONTENT -->
+    </div>
+</div>
+</div>
+<!-- END PAGE CONTAINER -->
+
+
+
+<!-- BEGIN FOOTER -->
+<%include widget/footer%>
+<!-- END FOOTER -->
+
+<script src="/assets/plugins/handlebars/handlebars.js"></script>
+<script src="/assets/plugins/bootstrap-paginator/build/bootstrap-paginator.min.js"></script>
+
+<script type="text/x-handlebars-template" id="deviceListTemplate">
+    <div class="row">
+    {{#each data}}
+    <div class="col-md-3 col-lg-3">
+        <div class="div-device">
+            <div class="div-device-title">#{{this.box_num}}机柜#{{this.dev_num}}除湿机</div>
+            <div class="div-device-item">
+                <div class="key">温度</div><div class="value">{{this.temp_value}}</div>
+                {{#if this.heat_state}}<span style="color:red;">工作</span>{{else}}待机{{/if}}
+                <div class="clearfix"></div>
+            </div>
+            <div class="div-device-item">
+                <div class="key">湿度</div><div class="value">{{this.hum_value}}</div>
+                {{#if this.dehum_state}}<span style="color:red;">工作</span>{{else}}待机{{/if}}
+                <div class="clearfix"></div>
+            </div>
+            <div class="div-device-item">
+                <div class="key">除湿时间</div><div class="value">{{this.dehum_total_time}}&nbsp;&nbsp;min</div>
+                <div class="clearfix"></div>
+            </div>
+            <div class="div-device-item">
+                <div class="key">加热时间</div><div class="value">{{this.heat_total_time}}&nbsp;&nbsp;min</div>
+                <div class="clearfix"></div>
+            </div>
+            <div class="div-device-item">
+                <div class="key">除湿电量</div><div class="value">{{this.dehum_total_wh}}&nbsp;&nbsp;WH</div>
+                <div class="clearfix"></div>
+            </div>
+            <div class="div-device-item">
+                <div class="key">加热电量</div><div class="value">{{this.heat_total_wh}}&nbsp;&nbsp;WH</div>
+                <div class="clearfix"></div>
+            </div>
+            <div class="div-device-detail">
+                <a href="/device/{{this.area_num}}_{{this.box_num}}_{{this.dev_num}}">详情>></a>
+            </div>
+        </div>
+
+    </div>
+    {{/each}}
+    </div>
+</script>
+
+<script>
+    function Search() {
+        //私有变量----搜索的各种条件
+        var searchParams={"pageSize":8};
+        //私有方法----刷新数据 newFilter参数用来控制是否刷新分页控件,排序是不改变分页控件的!所以排序的时候传false,其他都传true
+        var refresh = function(newFilter){
+            if(newFilter) searchParams.page = 1;
+            $.ajax({
+                url:'/ajax/devices',
+                method:'GET',
+                data:searchParams
+            }).done(function(data){
+                let source   = $("#deviceListTemplate").html();
+                let template = Handlebars.compile(source);
+                let html    = template(data);
+                $('.div-search-result').html(html);
+                if(newFilter){
+                    //如果是新的filter条件则需要重新刷新分页栏,因为页面已经刷新过了,就暂不刷新了
+                    if(data['totalRecords']){
+                        $('#results-page .pagination').bootstrapPaginator({
+                            bootstrapMajorVersion:3,
+                            currentPage: data['page'],
+                            totalPages:  data['totalPage'],
+                            onPageChanged:function(event, oldPage, newPage){
+                                searchParams.page = newPage;//分页的信息只有这个入口可以改变,不存在public方法可以强制设置
+                                $('#page-info .page').html(newPage);
+                                refresh(false);
+                            }
+                        });
+                    }else{
+                        $('#results-page .pagination').empty();
+                    }
+                }
+            });
+        };
+        return {
+            refresh:refresh //因为初始化的时候需要刷新一下,所以把这个方法暴露一下
+        }
+
+    };
+
+
+
+    // 这儿偷懒一下，把后端传过来的对象直接赋值给js对象
+    let summaryData = JSON.parse('<%-JSON.stringify(summaryData)%>')
+
+    function drawChart1(){
+        let char1 = echarts.init(document.getElementById('div_chart_1'), 'dark');
+        let option1 = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{b}: {c} ({d}%)'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 10,
+                data: ['在线台数', '下线台数']
+            },
+            series: [
+                {
+                    name: '除湿机数量',
+                    type: 'pie',
+                    radius: ['50%', '70%'],
+                    emphasis: {
+                        label: {
+                            show: true,
+                            fontSize: '16',
+                            fontWeight: 'bold'
+                        }
+                    },
+                    label: {
+                        show: false ,
+                        position: 'center'
+                    },
+                    data: [
+                        {value: summaryData.total_valid, name: '在线台数'},
+                        {value: summaryData.total-summaryData.total_valid, name: '下线台数'}
+                    ]
+                }
+            ]
+        }
+        char1.setOption(option1, true)
+    }
+
+    function drawChart2(){
+        let char2 = echarts.init(document.getElementById('div_chart_2'), 'dark');
+        let option2 = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{b}: {c} ({d}%)'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 10,
+                data: ['工作台数', '待机台数']
+            },
+            series: [
+                {
+                    name: '除湿机数量',
+                    type: 'pie',
+                    radius: ['50%', '70%'],
+                    emphasis: {
+                        label: {
+                            show: true,
+                            fontSize: '16',
+                            fontWeight: 'bold'
+                        }
+                    },
+                    label: {
+                        show: false ,
+                        position: 'center'
+                    },
+                    data: [
+                        {value: summaryData.total_working, name: '工作台数'},
+                        {value: summaryData.total-summaryData.total_working, name: '待机台数'}
+                    ]
+                }
+            ]
+        }
+        char2.setOption(option2, true)
+    }
+
+
+    function initPage(){
+        let search = Search()
+
+        //界面初始化的时候刷新一次,只运行一次
+        search.refresh(true)
+
+        drawChart1()
+        drawChart2()
+    }
+
+    $(document).ready(initPage)
+</script>
+
+
+</body>
+<!-- END BODY -->
+</html>

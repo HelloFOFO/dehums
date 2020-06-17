@@ -1,0 +1,22 @@
+.div-device{
+    /*margin:5px;*/
+    padding: 5px;
+    border:1px solid #CCCCCC;
+    margin: 10px 0px;
+}
+
+.div-device-title{
+    text-align: center;
+    color: white;
+    font-size: 16px;
+}
+
+.div-device-item {height: 25px; line-height: 25px; font-size: 14px;}
+.div-device-item .key{min-width: 80px; float:left;}
+.div-device-item .value{min-width: 80px; float:left;}
+.div-device-detail a{color: #0da3e2}
+.div-device-detail {text-align: right}
+
+#results-page{
+    text-align: right;
+}

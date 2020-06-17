@@ -23,3 +23,19 @@ function showResult(title,text){
     $("#div_dialog_result").text(text);
     $("#div_dialog_result").dialog("open");
 }
+
+function getMenuArea(){
+    $.ajax({
+        url:"/ajax/arealist",
+        async:true,
+        method:'GET'
+    }).done(function(data){
+        let resHtml = ""
+        for(var i in data.data){
+            // alert(data.data[i].areaId + '-' + data.data[i].areaName)
+            resHtml += "<li><a href=\"\\area\\"+data.data[i].areaId+"\">"+data.data[i].areaName+"</a></li>"
+        }
+        // alert(resHtml)
+        $('#ul_area').html(resHtml)
+    });
+}

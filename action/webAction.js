@@ -1,8 +1,98 @@
 let dbService = require("./../service/dbService");
 
-exports.renderHome = function(req,res){
-    res.render('index', { title: 'DEHUMSSS' });
+exports.renderStation = function(req, res){
+    let summaryData = {
+        total: 0,
+        total_valid: 0,
+        total_working: 0,
+        cnt_alarms: 0
+    }
+
+    dbService.getStationSummary(function(err, data){
+        if(err){
+            res.render('index', { title: '全站运行工况', summaryData:summaryData});
+        }
+        else{
+            res.render('index', { title: '全站运行工况', summaryData:data  });
+        }
+    })
 }
+
+// 返回全站的概览数据
+exports.getStationSummary = function(req, res){
+    let summaryData = {
+        total: 0,
+        total_valid: 0,
+        total_working: 0,
+        cnt_alarms: 0
+    }
+    dbService.getStationSummary(function(err, data){
+        if(err){
+            res.json({data:summaryData});
+        }
+        else{
+            res.json({data:data});
+        }
+    })
+}
+
+// 返回全站的用电量数据（包括除湿、加热）
+exports.getStationSummaryUsage = function(req, res){
+    dbService.getStationSummaryUsage(function(err, data){
+        if(err){
+            res.json({data:[]});
+        }
+        else{
+            res.json({data:data});
+        }
+    })
+}
+
+
+exports.renderArea = function(req, res){
+    let summaryData = {
+        area_num: -1,
+        area_name: "未知",
+        total: 0,
+        total_valid: 0,
+        total_working: 0,
+        cnt_alarms: 0
+    }
+
+    let areaNum = req.params.areaNum
+
+    dbService.getAreaSummary(areaNum, function(err, data){
+        if(err){
+            res.render('area', { title: '区域运行工况', summaryData:summaryData});
+        }
+        else{
+            res.render('area', { title: '区域运行工况', summaryData:data  });
+        }
+    })
+}
+
+exports.getDevices = function(req ,res){
+    let page     = req.query.page||1;//默认从第一页开始查询
+    let pageSize = parseInt(req.query.pageSize)||9
+    let areaNum = req.query.areaNum
+
+    let searchParams = {
+        page: page,
+        pageSize: pageSize,
+        areaNum: areaNum
+    }
+
+    dbService.getDevices(searchParams, function(err, data){
+        if(err){
+            console.log(err)
+            res.json({errorCode: -1,errorMsg: "获取除湿机列表失败"})
+        }
+        else{
+            res.json(data)
+        }
+    })
+}
+
 
 exports.renderAdminIndex = function(req,res){
     dbService.getGlobalConfig(function(err,data){

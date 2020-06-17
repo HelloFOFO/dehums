@@ -2,7 +2,17 @@ let express = require('express');
 let router = express.Router();
 let web = require('../action/webAction')
 
-router.get('/', web.renderHome);
+
+router.get('/', web.renderStation);
+router.get('/ajax/summary', web.getStationSummary)
+router.get('/ajax/summaryUsage', web.getStationSummaryUsage)
+
+router.get('/area/:areaNum', web.renderArea)
+router.get('/ajax/devices', web.getDevices)
+
+
+
+// 下面是管理配置相关的页面；
 
 // 全局配置相关
 router.get('/admin', web.renderAdminIndex)

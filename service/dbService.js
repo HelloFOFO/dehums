@@ -1,5 +1,6 @@
-let pool  = require('./../libs/dbpool');
-let async = require("async");
+let pool  = require('./../libs/dbpool')
+let async = require('async')
+let _ = require('underscore')
 
 //只有接口里会用到的函数，为了写sql方便，不用拼字符串
 let heredoc = function(fn) {
@@ -42,6 +43,207 @@ exports.getGlobalConfig = function(cb){
         }
     );
 }
+
+// 返回全站的概览数据
+exports.getStationSummary = function(cb){
+    async.auto({
+        summaryData:function(cb1){
+            pool.getConnection(function (error, conn) {
+                if (error) {
+                    console.log(error)
+                    cb1("error_db_connect", null);
+                } else {
+                    // 只取数据库中id为1的那一条
+                    let sql = heredoc(function () {/*
+                     call spq_summary_data()
+                     */});
+                    // console.log(sql)
+                    conn.query(sql, function (error, rows) {
+                        conn.release();
+                        if (error || rows.length == 0) {
+                            console.log(error)
+                            cb1("error_db_query", null);
+                        } else {
+                            cb1(null, rows[0]);
+                        }
+                    });
+                }
+            });
+        }
+    },function(err,results){
+        if (err) {
+            cb({"errorCode":-1,"errorMsg":'获取概览数据失败'},null);
+        } else {
+            cb(null,results.summaryData[0]);
+        }
+    });
+}
+
+
+// 返回区域的概览数据
+exports.getAreaSummary = function(areaNum, cb){
+    async.auto({
+        summaryData:function(cb1){
+            pool.getConnection(function (error, conn) {
+                if (error) {
+                    console.log(error)
+                    cb1("error_db_connect", null);
+                } else {
+                    // 只取数据库中id为1的那一条
+                    let sql = heredoc(function () {/*
+                     call spq_summary_data_by_areanum(?)
+                     */});
+                    let sqlParam = [areaNum]
+                    // console.log(sql)
+                    conn.query(sql, sqlParam, function (error, rows) {
+                        conn.release();
+                        if (error || rows.length == 0) {
+                            console.log(error)
+                            cb1("error_db_query", null);
+                        } else {
+                            cb1(null, rows[0]);
+                        }
+                    });
+                }
+            });
+        }
+    },function(err,results){
+        if (err) {
+            cb({"errorCode":-1,"errorMsg":'获取概览数据失败'},null);
+        } else {
+            cb(null,results.summaryData[0]);
+        }
+    });
+}
+
+exports.getDevices = function(params, cb){
+    let page = params.page
+    let pageSize = params.pageSize
+    let areaNum = params.areaNum
+
+    async.auto({
+        paramCheck:function(cb){
+            //TODO:参数检查
+            cb(null,null);
+        },
+        deviceCount:['paramCheck',function(cb, dummy){
+            //由于要分页，先得算算总数
+            pool.getReadOnlyConnection(function (error, conn) {
+                if(error){
+                    cb("数据库连接失败", null);
+                }else{
+                    var sql = heredoc(function () {/*
+                             select  count(*) as count
+                             from    newest_data
+                             __WHERE_CLAUSE__
+                     */});
+                    var sqlParams = [  ];//where条件后续添加
+                    //这里查询条件比较烦，我还没想好怎么做
+                    var whereClause = 'where 1=1';
+                    if(areaNum)    {whereClause+=' and area_num =?';     sqlParams.push(areaNum)};
+                    //最终将whereClause拼接上去
+                    sql = sql.replace(/__WHERE_CLAUSE__/g,whereClause);
+
+                    conn.query(sql, sqlParams, function (error, rows) {
+                        conn.release();
+                        if (error){
+                            console.log(error)
+                            cb("查询除湿机列表失败-2", null)
+                        }else if(_.isEmpty(rows)){
+                            cb("没有找到除湿机-1", null);
+                        }else{
+                            cb(null,rows[0]['count']);
+                        }
+                    });
+                }
+            });
+        }],
+        devices:['paramCheck',function(cb,dummy){
+            //获取除湿机列表
+            pool.getReadOnlyConnection(function (error, conn) {
+                if(error){
+                    cb("数据库连接失败", null);
+                }else{
+                    let sql = heredoc(function () {/*
+                             select time, area_num, box_num, dev_num, hum_value, temp_value, valid
+                                   ,dehum_state, heat_state, dehum_total_time, heat_total_time, hum_set_value, hum_return_diff
+                                   ,hum_adjust_value, heat_start_temp, heat_return_diff, dehum_total_wh, heat_total_wh
+                             from newest_data t
+                             __WHERE_CLAUSE__
+                             __ORDERBY_CLAUSE__
+                             limit ?,?
+                     */});
+                    let sqlParams = [   ];//where条件后续添加
+
+                    //这里查询条件比较烦，我还没想好怎么做
+                    let whereClause = 'where 1=1 ';
+                    if(areaNum)    {whereClause+=' and area_num=?';     sqlParams.push(parseInt(areaNum))};
+
+                    //最终将whereClause和orderClause拼接上去
+                    sql = sql.replace(/__WHERE_CLAUSE__/g,whereClause)
+
+                    sql = sql.replace(/__ORDERBY_CLAUSE__/,'order by box_num')
+                    sqlParams = sqlParams.concat([ (page-1)*pageSize , pageSize]);
+                    conn.query(sql, sqlParams, function (error, rows) {
+                        conn.release();
+                        if (error){
+                            console.log(error)
+                            cb("查询除湿机列表失败-2", null);
+                        }else if(rows.length==0){
+                            //如果搜索结果不存在，则直接跳出
+                            cb("没有找到除湿机-1", null);
+                        } else{
+                            cb(null, rows||[]);
+                        }
+                    });
+                }
+            });
+        }]
+    },function(error,results){
+        if (error) {
+            console.log(error)
+            cb({"errorCode": -1, "errorMsg": "查询除湿机列表异常"});
+        } else {
+            cb(null, {"errorCode": 200, "errorMsg": "", data: results.devices,page:page,totalPage:Math.ceil(parseFloat(results.deviceCount)/pageSize),totalRecords:results.deviceCount});
+        }
+    });
+}
+
+// 返回全站的用量数据
+exports.getStationSummaryUsage = function(cb){
+    async.auto({
+        summaryUsageData:function(cb1){
+            pool.getConnection(function (error, conn) {
+                if (error) {
+                    console.log(error)
+                    cb1("error_db_connect", null);
+                } else {
+                    // 只取数据库中id为1的那一条
+                    let sql = heredoc(function () {/*
+                     call spq_summary_usage_data()
+                     */});
+                    // console.log(sql)
+                    conn.query(sql, function (error, rows) {
+                        conn.release();
+                        if (error) {
+                            console.log(error)
+                            cb1("error_db_query", null);
+                        } else {
+                            cb1(null, rows[0]);
+                        }
+                    });
+                }
+            });
+        }
+    },function(err,results){
+        if (err) {
+            cb({"errorCode":-1,"errorMsg":'获取概览数据失败'},null);
+        } else {
+            cb(null,results.summaryUsageData);
+        }
+    });
+}
+
 
 exports.updateGlobalConfig = function(conf, cb){
     // console.log(conf)
