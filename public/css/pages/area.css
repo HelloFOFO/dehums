@@ -20,3 +20,7 @@
 #results-page{
     text-align: right;
 }
+
+#span_total_count{
+    font-size: 16px;color:#21ad5c;padding: 0 3px;
+}

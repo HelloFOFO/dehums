@@ -71,6 +71,20 @@ exports.renderArea = function(req, res){
     })
 }
 
+exports.renderDevice = function(req, res){
+
+    let dev = req.params.devNums.split('_')
+    
+    let deviceInfo = {
+        areaNum: dev[0],
+        boxNum: dev[1],
+        devNum: dev[2]
+    }
+    res.render('device', { title: '除湿机运行工况', deviceInfo:deviceInfo  });
+
+}
+
+
 exports.getDevices = function(req ,res){
     let page     = req.query.page||1;//默认从第一页开始查询
     let pageSize = parseInt(req.query.pageSize)||9
@@ -92,6 +106,30 @@ exports.getDevices = function(req ,res){
         }
     })
 }
+
+
+exports.getDeviceTempAndHum = function(req ,res){
+    let areaNum = req.query.areaNum
+    let boxNum = req.query.boxNum
+    let devNum = req.query.devNum
+
+    let deviceInfo = {
+        areaNum: areaNum,
+        boxNum: boxNum,
+        devNum: devNum
+    }
+
+    dbService.getDeviceTempAndHum(deviceInfo, function(err, data){
+        if(err){
+            console.log(err)
+            res.json({errorCode: -1,errorMsg: "获取除湿机温湿度失败"})
+        }
+        else{
+            res.json(data)
+        }
+    })
+}
+
 
 
 exports.renderAdminIndex = function(req,res){

@@ -4,6 +4,7 @@ select * from history_alarm limit 10;
 
 select * from dev_config;
 
+SELECT * FROM sys_area;
 
 select * from newest_data limit 10;
 

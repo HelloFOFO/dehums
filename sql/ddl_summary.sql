@@ -120,7 +120,10 @@ CREATE TEMPORARY TABLE num (i int);
 INSERT INTO num (i) VALUES (0), (1), (2), (3), (4), (5), (6), (7);
 
 SELECT dt.cal_dt
-              ,t.dehum_total_time,t.dehum_total_wh,t.heat_total_time,t.heat_total_wh
+              ,CEIL(IFNULL(t.dehum_total_time,0)) AS dehum_total_time
+              ,CEIL(IFNULL(t.dehum_total_wh,0)) AS dehum_total_wh
+              ,CEIL(IFNULL(t.heat_total_time,0)) AS heat_total_time
+              ,CEIL(IFNULL(t.heat_total_wh,0)) AS heat_total_wh
 FROM   
 (
 SELECT DATE_SUB(CURRENT_DATE(), INTERVAL num.i DAY) AS cal_dt
@@ -147,5 +150,6 @@ DROP TEMPORARY TABLE IF EXISTS num;
 
 END$$
 DELIMITER ;
+
 
 

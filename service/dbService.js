@@ -245,6 +245,47 @@ exports.getStationSummaryUsage = function(cb){
 }
 
 
+// 返回除湿机的温湿度数据
+exports.getDeviceTempAndHum = function(deviceInfo, cb){
+    async.auto({
+        tempAndHum:function(cb1){
+            pool.getConnection(function (error, conn) {
+                if (error) {
+                    console.log(error)
+                    cb1("error_db_connect", null);
+                } else {
+                    // 只取数据库中id为1的那一条
+                    let sql = heredoc(function () {/*
+                     select time,hum_value,temp_value
+                     from   history_data
+                     where  area_num = ? and box_num = ? and dev_num = ? and datediff(time,current_date()) = 0
+                     order  by time asc
+                     */});
+                    // console.log(sql)
+                    let sqlParams = [deviceInfo.areaNum, deviceInfo.boxNum, deviceInfo.devNum]
+                    conn.query(sql, sqlParams, function (error, rows) {
+                        conn.release();
+                        if (error) {
+                            console.log(error)
+                            cb1("error_db_query", null);
+                        } else {
+                            cb1(null, rows);
+                        }
+                    });
+                }
+            });
+        }
+    },function(err,results){
+        if (err) {
+            cb({"errorCode":-1,"errorMsg":'获取概览数据失败'},null);
+        } else {
+            cb(null,results.tempAndHum);
+        }
+    });
+}
+
+
+
 exports.updateGlobalConfig = function(conf, cb){
     // console.log(conf)
     async.waterfall(

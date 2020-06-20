@@ -45,16 +45,19 @@
             </div>
             <div id="results-body" class="row" style="margin-top: 15px;">
                 <div class="col-lg-12 col-md-12">
-                <div class="div-search-result">
-                    <!--<div>替换除湿机列表</div>-->
+                    共<span id="span_total_count"></span>台除湿机
                 </div>
-                <div style="clear:both"></div>
-                <div id="results-page">
-                    <ul class="pagination bootpag">
-                    </ul>
+                <div class="col-lg-12 col-md-12">
+                    <div class="div-search-result">
+                        <!--<div>替换除湿机列表</div>-->
+                    </div>
+                    <div style="clear:both"></div>
+                    <div id="results-page">
+                        <ul class="pagination bootpag">
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </div>
         <!-- END PAGE CONTENT -->
     </div>
 </div>
@@ -115,9 +118,9 @@
 <script>
     function Search() {
         //私有变量----搜索的各种条件
-        var searchParams={"pageSize":8};
+        let searchParams={"pageSize":8, "areaNum":<%= summaryData.area_num%>};
         //私有方法----刷新数据 newFilter参数用来控制是否刷新分页控件,排序是不改变分页控件的!所以排序的时候传false,其他都传true
-        var refresh = function(newFilter){
+        let refresh = function(newFilter){
             if(newFilter) searchParams.page = 1;
             $.ajax({
                 url:'/ajax/devices',
@@ -140,7 +143,8 @@
                                 $('#page-info .page').html(newPage);
                                 refresh(false);
                             }
-                        });
+                        })
+                        $('#span_total_count').html(data['totalRecords']||0);
                     }else{
                         $('#results-page .pagination').empty();
                     }

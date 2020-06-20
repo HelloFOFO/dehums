@@ -1,0 +1,206 @@
+<!-- BEGIN HEADER -->
+<%include widget/header%>
+<!-- END HEADER -->
+
+
+
+<!--BEGIN LOAD PAGE LEVEL CSS STYLE-->
+<!--<link href="/css/pages/device.css" rel="stylesheet" media="screen">-->
+<!--END LOAD PAGE LEVEL CSS STYLE-->
+
+<!-- BEGIN PAGE CONTAINER -->
+<div class="page-container">
+    <div class="page-content">
+        <!-- BEGIN PAGE CONTENT -->
+        <div class="container" style="min-height: 800px">
+            <div class="dehum-content-title ">#<%- deviceInfo.boxNum%>机柜#<%- deviceInfo.devNum%>除湿机</div>
+            <div class="row" style="margin-top: 15px;">
+                <div class="col-lg-6 col-md-6">
+                    <div class="dehum-content-subtitle dehum-div-border">
+                        <span>温度</span>
+                    </div>
+                    <div class="dehum-div-border text-center">
+                        <div id="div_chart_temp" style="height:300px; width: 100%;">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6">
+                    <div class="dehum-content-subtitle dehum-div-border">
+                        <span>湿度</span>
+                    </div>
+                    <div class="dehum-div-border">
+                        <div id="div_chart_hum" style="height:300px; width: 100%;">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="margin-top: 15px;">
+                <div class="col-lg-6 col-md-6">
+                    <div class="dehum-content-subtitle dehum-div-border">
+                        <span>加热时间/用电</span>
+                    </div>
+                    <div class="dehum-div-border text-center">
+                        <div id="div_chart_heat_usage" style="height:150px; width: 100%;">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6">
+                    <div class="dehum-content-subtitle dehum-div-border">
+                        <span>除湿时间/用电</span>
+                    </div>
+                    <div class="dehum-div-border">
+                        <div id="div_chart_dehum_usage" style="height:150px; width: 100%;">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- END PAGE CONTENT -->
+    </div>
+</div>
+</div>
+<!-- END PAGE CONTAINER -->
+
+
+
+<!-- BEGIN FOOTER -->
+<%include widget/footer%>
+<!-- END FOOTER -->
+
+<script>
+
+    // 这儿偷懒一下，把后端传过来的对象直接赋值给js对象
+    let deviceInfo = JSON.parse('<%-JSON.stringify(deviceInfo)%>')
+
+    function drawChartTempAndHum(){
+        let time = []
+        for (var i = 0; i <= 1440; i++) {
+            var min = (i % 60);
+            if (min < 10)
+                min = "0" + min
+            var hour = parseInt(i / 60)
+            if (hour < 10)
+                hour = "0" + hour
+            var label = hour + ":" + min;
+            time.push(label);
+        }
+
+
+        let temperature = []
+        let hum = []
+
+        let chartTemp = echarts.init(document.getElementById('div_chart_temp'), 'dark');
+        let chartHum = echarts.init(document.getElementById('div_chart_hum'), 'dark');
+
+        let optionChartTemp = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    crossStyle: {
+                        color: '#999'
+                    }
+                }
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    data: time,
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+                    name: '温度',
+                    min: -20,
+                    max: 100,
+                    interval: 20,
+                    axisLabel: {
+                        formatter: '{value}'
+                    }
+                }
+            ],
+            series: [
+                {
+                    name: '温度',
+                    type: 'line',
+                    data: temperature
+                }
+            ]
+        }
+
+        let optionChartHum = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    crossStyle: {
+                        color: '#999'
+                    }
+                }
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    data: time,
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+                    name: '湿度',
+                    min: 0,
+                    max: 100,
+                    interval: 20,
+                    axisLabel: {
+                        formatter: '{value}'
+                    }
+                }
+            ],
+            series: [
+                {
+                    name: '湿度',
+                    type: 'line',
+                    data: hum
+                }
+            ]
+        }
+
+        $.ajax({
+            url:'/ajax/device/tempAndHum',
+            method:'GET',
+            data:deviceInfo
+        }).done(function(data) {
+            let dataChart = data
+            for(var i in dataChart){
+                var time = dataChart[i].time
+                var hh = moment(time).get('hours')
+                var mi = moment(time).get('minutes')
+                temperature[hh*60+mi] = dataChart[i].temp_value
+                hum[hh*60+mi] = dataChart[i].hum_value
+            }
+            chartTemp.setOption(optionChartTemp, true)
+            chartHum.setOption(optionChartHum, true)
+        })
+    }
+
+
+    function initPage(){
+        drawChartTempAndHum()
+    }
+
+    $(document).ready(initPage)
+</script>
+
+
+</body>
+<!-- END BODY -->
+</html>

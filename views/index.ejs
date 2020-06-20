@@ -191,8 +191,8 @@
                     type: 'value',
                     name: '时长',
                     min: 0,
-                    max: 1800,
-                    interval: 300,
+                    max: 900,
+                    interval: 150,
                     axisLabel: {
                         formatter: '{value} s'
                     }
@@ -201,8 +201,8 @@
                     type: 'value',
                     name: '电量',
                     min: 0,
-                    max: 30,
-                    interval: 5,
+                    max: 900,
+                    interval: 150,
                     axisLabel: {
                         formatter: '{value} Wh'
                     }
@@ -217,6 +217,7 @@
                 {
                     name: '除湿用电',
                     type: 'line',
+                    yAxisIndex: 1,
                     data: dehumWH
                 }
             ]
@@ -249,8 +250,8 @@
                     type: 'value',
                     name: '时长',
                     min: 0,
-                    max: 1800,
-                    interval: 300,
+                    max: 900,
+                    interval: 150,
                     axisLabel: {
                         formatter: '{value} s'
                     }
@@ -259,10 +260,10 @@
                     type: 'value',
                     name: '电量',
                     min: 0,
-                    max: 30,
-                    interval: 5,
+                    max: 900,
+                    interval: 150,
                     axisLabel: {
-                        formatter: '{value} kWh'
+                        formatter: '{value} WH'
                     }
                 }
             ],
@@ -275,10 +276,12 @@
                 {
                     name: '加热用电',
                     type: 'line',
+                    yAxisIndex: 1,
                     data: heatWH
                 }
             ]
         }
+
 
         $.getJSON('/ajax/summaryUsage', function(data){
             let chartData = data.data
@@ -290,9 +293,34 @@
                 heatWH.push(chartData[i].heat_total_wh)
             }
 
+            //重新计算X/Y轴的最大最小值
+            var maxDehumTime = Math.max.apply(null, dehumTime.concat(1200))
+            var maxDehumTimeY = Math.ceil(maxDehumTime/600)*600
+            var intervalDehumTimeY = maxDehumTimeY/6
+            option3.yAxis[0].max = maxDehumTimeY
+            option3.yAxis[0].interval = intervalDehumTimeY
+
+            var maxDehumWh = Math.max.apply(null, dehumWH.concat(1200))
+            var maxDehumWhY = Math.ceil(maxDehumWh/600)*600
+            var intervalDehumWhY = maxDehumWhY/6
+            option3.yAxis[1].max = maxDehumWhY
+            option3.yAxis[1].interval = intervalDehumWhY
+
+            var maxHeatTime = Math.max.apply(null, heatTime.concat(1200))
+            var maxHeatTimeY = Math.ceil(maxHeatTime/600)*600
+            var intervalHeatTimeY = maxHeatTimeY/6
+            option4.yAxis[0].max = maxHeatTimeY
+            option4.yAxis[0].interval = intervalHeatTimeY
+
+            var maxHeatWh = Math.max.apply(null, heatWH.concat(1200))
+            var maxHeatWhY = Math.ceil(maxHeatWh/600)*600
+            var intervalHeatWhY = maxHeatWhY/6
+            option4.yAxis[1].max = maxHeatWhY
+            option4.yAxis[1].interval = intervalHeatWhY
+
+
             chart3.setOption(option3, true)
             chart4.setOption(option4, true)
-
         })
 
 

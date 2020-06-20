@@ -10,6 +10,8 @@ router.get('/ajax/summaryUsage', web.getStationSummaryUsage)
 router.get('/area/:areaNum', web.renderArea)
 router.get('/ajax/devices', web.getDevices)
 
+router.get('/device/:devNums', web.renderDevice)
+router.get('/ajax/device/tempAndHum', web.getDeviceTempAndHum)
 
 
 // 下面是管理配置相关的页面；
