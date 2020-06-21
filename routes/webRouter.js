@@ -11,7 +11,13 @@ router.get('/area/:areaNum', web.renderArea)
 router.get('/ajax/devices', web.getDevices)
 
 router.get('/device/:devNums', web.renderDevice)
+router.get('/ajax/device', web.getDevice)
 router.get('/ajax/device/tempAndHum', web.getDeviceTempAndHum)
+router.get('/ajax/device/summaryUsage', web.getDeviceSummaryUsage)
+
+router.get('/alarms', web.renderAlarms)
+router.get('/ajax/alarmList', web.getAlarmList)
+router.get('/ajax/alarmListDT', web.getAlarmListDT)
 
 
 // 下面是管理配置相关的页面；
@@ -37,7 +43,9 @@ router.post('/ajax/admin/box', web.updateElseInsertBox)
 //除湿机管理相关
 router.get('/admindevice', web.renderAdminDevice)
 router.get('/ajax/admin/devicelist', web.getAdminDeviceList)
+router.get('/ajax/devicelist', web.getDeviceList)
 router.post('/ajax/admin/device', web.updateElseInsertDevice)
+
 
 //DEV_CONFIG表相关
 router.get('/admindevconfig', web.renderAdminDevConfig)

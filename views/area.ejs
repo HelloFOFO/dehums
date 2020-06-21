@@ -38,8 +38,12 @@
                 </div>
                 <div class="col-lg-4 col-md-4">
                     <div class="dehum-content-subtitle dehum-div-border" style="min-height: 180px;">
-                        <span>报警数量</span>
-                        <span class="dehum-content-subtitle-value"><%- summaryData.cnt_alarms%></span>
+                        <span>今日报警数量</span>
+                        <span class="dehum-content-subtitle-value" id="span_alarm_today">
+                            <a href="#">
+                                <%- summaryData.cnt_alarms%>
+                            </a>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -78,7 +82,7 @@
     {{#each data}}
     <div class="col-md-3 col-lg-3">
         <div class="div-device">
-            <div class="div-device-title">#{{this.box_num}}机柜#{{this.dev_num}}除湿机</div>
+            <div class="div-device-title">【{{this.box_name}}】#{{this.dev_num}}除湿机</div>
             <div class="div-device-item">
                 <div class="key">温度</div><div class="value">{{this.temp_value}}</div>
                 {{#if this.heat_state}}<span style="color:red;">工作</span>{{else}}待机{{/if}}
@@ -247,6 +251,12 @@
 
         drawChart1()
         drawChart2()
+
+        let beginDate = moment(new Date()).format("YYYY-MM-DD")
+        let endDate = moment(new Date()).format("YYYY-MM-DD")
+        strHref = "/alarms?dev=<%- summaryData.area_num%>&beginDate="+beginDate+"&endDate="+endDate
+        // alert(strHref)
+        $('#span_alarm_today a').attr("href", strHref)
     }
 
     $(document).ready(initPage)

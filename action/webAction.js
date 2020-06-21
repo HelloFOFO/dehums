@@ -1,4 +1,6 @@
 let dbService = require("./../service/dbService");
+let moment = require('moment')
+let validator = require('validator')
 
 exports.renderStation = function(req, res){
     let summaryData = {
@@ -48,7 +50,6 @@ exports.getStationSummaryUsage = function(req, res){
     })
 }
 
-
 exports.renderArea = function(req, res){
     let summaryData = {
         area_num: -1,
@@ -72,18 +73,24 @@ exports.renderArea = function(req, res){
 }
 
 exports.renderDevice = function(req, res){
-
     let dev = req.params.devNums.split('_')
-    
     let deviceInfo = {
         areaNum: dev[0],
         boxNum: dev[1],
         devNum: dev[2]
     }
-    res.render('device', { title: '除湿机运行工况', deviceInfo:deviceInfo  });
-
+    dbService.getDevice(deviceInfo,function(err, data){
+        let info = {
+            areaNum : data.area_num,
+            areaName : data.area_name,
+            boxNum : data.box_num,
+            boxName : data.box_name,
+            devNum : data.dev_num,
+            cnt_alarms : data.cnt_alarms
+        }
+        res.render('device', { title: '除湿机运行工况', deviceInfo:info});
+    })
 }
-
 
 exports.getDevices = function(req ,res){
     let page     = req.query.page||1;//默认从第一页开始查询
@@ -100,6 +107,28 @@ exports.getDevices = function(req ,res){
         if(err){
             console.log(err)
             res.json({errorCode: -1,errorMsg: "获取除湿机列表失败"})
+        }
+        else{
+            res.json(data)
+        }
+    })
+}
+
+exports.getDevice = function(req, res){
+    let areaNum = req.query.areaNum
+    let boxNum = req.query.boxNum
+    let devNum = req.query.devNum
+
+    let deviceInfo = {
+        areaNum: areaNum,
+        boxNum: boxNum,
+        devNum: devNum
+    }
+
+    dbService.getDevice(deviceInfo, function(err, data){
+        if(err){
+            console.log(err)
+            res.json({errorCode: -1,errorMsg: "获取除湿机信息失败"})
         }
         else{
             res.json(data)
@@ -128,6 +157,80 @@ exports.getDeviceTempAndHum = function(req ,res){
             res.json(data)
         }
     })
+}
+
+
+exports.getDeviceSummaryUsage = function(req ,res){
+    let areaNum = req.query.areaNum
+    let boxNum = req.query.boxNum
+    let devNum = req.query.devNum
+
+    let deviceInfo = {
+        areaNum: areaNum,
+        boxNum: boxNum,
+        devNum: devNum
+    }
+
+    dbService.getDeviceSummaryUsage(deviceInfo, function(err, data){
+        if(err){
+            console.log(err)
+            res.json({errorCode: -1,errorMsg: "获取除湿机用电量失败"})
+        }
+        else{
+            res.json(data)
+        }
+    })
+}
+
+
+exports.getAlarmList = function(req ,res){
+    let areaNum = parseInt(req.query.areaNum)?parseInt(req.query.areaNum):-1
+    let boxNum = parseInt(req.query.boxNum)?parseInt(req.query.boxNum):-1
+    let devNum = parseInt(req.query.devNum)?parseInt(req.query.devNum):-1
+    // console.log(areaNum)
+
+    let bDate = req.query.beginDate? req.query.beginDate:""
+    let eDate = req.query.endDate? req.query.endDate:""
+
+    let beginDate = validator.isISO8601(bDate) ? moment(bDate).format("YYYY-MM-DD") : moment(new Date()).add(-1, 'month').format("YYYY-MM-DD")
+    let endDate = validator.isISO8601(eDate) ? moment(eDate).format("YYYY-MM-DD") : moment(new Date()).add(0, 'days').format("YYYY-MM-DD")
+    // console.log(beginDate)
+
+    let searchParams = {
+        areaNum: areaNum,
+        boxNum: boxNum,
+        devNum: devNum,
+        beginDate: beginDate,
+        endDate: endDate,
+    }
+
+    dbService.getAlarmList(searchParams, function(err, data){
+        if(err){
+            console.log(err)
+            res.json({errorCode: -1,errorMsg: "获取告警信息失败"})
+        }
+        else{
+            res.json(data)
+        }
+    })
+}
+
+exports.getAlarmListDT = function(req ,res){
+    let param = req.query
+
+    dbService.getAlarmListDT(param, function(err, data){
+        if(err){
+            console.log(err)
+            res.json({errorCode: -1,errorMsg: "获取告警信息失败"})
+        }
+        else{
+            res.json(data)
+        }
+    })
+}
+
+exports.renderAlarms = function(req, res){
+    res.render('alarms', {title: '告警查询'})
 }
 
 
@@ -288,6 +391,18 @@ exports.getAdminDeviceList = function(req, res){
         }
         else{
             res.json(data);
+        }
+    })
+}
+
+// 返回装置列表
+exports.getDeviceList = function(req, res){
+    dbService.getDeviceList(function(err, data){
+        if(err){
+            res.json({data:[]});
+        }
+        else{
+            res.json({data:data});
         }
     })
 }

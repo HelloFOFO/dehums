@@ -1,6 +1,8 @@
 let pool  = require('./../libs/dbpool')
 let async = require('async')
 let _ = require('underscore')
+let validator = require('validator')
+let moment = require('moment')
 
 //只有接口里会用到的函数，为了写sql方便，不用拼字符串
 let heredoc = function(fn) {
@@ -165,10 +167,12 @@ exports.getDevices = function(params, cb){
                     cb("数据库连接失败", null);
                 }else{
                     let sql = heredoc(function () {/*
-                             select time, area_num, box_num, dev_num, hum_value, temp_value, valid
-                                   ,dehum_state, heat_state, dehum_total_time, heat_total_time, hum_set_value, hum_return_diff
-                                   ,hum_adjust_value, heat_start_temp, heat_return_diff, dehum_total_wh, heat_total_wh
+                             select t.time, t.area_num,sa.area_name, t.box_num,sb.box_name, t.dev_num, t.hum_value, t.temp_value, t.valid
+                                   ,t.dehum_state, t.heat_state, t.dehum_total_time, t.heat_total_time, t.hum_set_value, t.hum_return_diff
+                                   ,t.hum_adjust_value, t.heat_start_temp, t.heat_return_diff, t.dehum_total_wh, t.heat_total_wh
                              from newest_data t
+                                  LEFT JOIN sys_area sa ON t.area_num = sa.area_num
+                                  LEFT JOIN sys_box  sb ON t.box_num = sb.box_num
                              __WHERE_CLAUSE__
                              __ORDERBY_CLAUSE__
                              limit ?,?
@@ -177,7 +181,7 @@ exports.getDevices = function(params, cb){
 
                     //这里查询条件比较烦，我还没想好怎么做
                     let whereClause = 'where 1=1 ';
-                    if(areaNum)    {whereClause+=' and area_num=?';     sqlParams.push(parseInt(areaNum))};
+                    if(areaNum)    {whereClause+=' and t.area_num=?';     sqlParams.push(parseInt(areaNum))};
 
                     //最终将whereClause和orderClause拼接上去
                     sql = sql.replace(/__WHERE_CLAUSE__/g,whereClause)
@@ -185,6 +189,7 @@ exports.getDevices = function(params, cb){
                     sql = sql.replace(/__ORDERBY_CLAUSE__/,'order by box_num')
                     sqlParams = sqlParams.concat([ (page-1)*pageSize , pageSize]);
                     conn.query(sql, sqlParams, function (error, rows) {
+                        console.log(sql)
                         conn.release();
                         if (error){
                             console.log(error)
@@ -244,6 +249,41 @@ exports.getStationSummaryUsage = function(cb){
     });
 }
 
+// 返回除湿机的温湿度数据
+exports.getDevice = function(deviceInfo, cb){
+    async.auto({
+        deviceInfo:function(cb1){
+            pool.getConnection(function (error, conn) {
+                if (error) {
+                    console.log(error)
+                    cb1("error_db_connect", null);
+                } else {
+                    // 只取数据库中id为1的那一条
+                    let sql = heredoc(function () {/*
+                     call spq_summary_data_by_devinfo(?,?,?)
+                     */});
+                    // console.log(sql)
+                    let sqlParams = [deviceInfo.areaNum, deviceInfo.boxNum, deviceInfo.devNum]
+                    conn.query(sql, sqlParams, function (error, rows) {
+                        conn.release();
+                        if (error) {
+                            console.log(error)
+                            cb1("error_db_query", null);
+                        } else {
+                            cb1(null, rows[0]);
+                        }
+                    });
+                }
+            });
+        }
+    },function(err,results){
+        if (err) {
+            cb({"errorCode":-1,"errorMsg":'获取概览数据失败'},null);
+        } else {
+            cb(null,results.deviceInfo[0]);
+        }
+    });
+}
 
 // 返回除湿机的温湿度数据
 exports.getDeviceTempAndHum = function(deviceInfo, cb){
@@ -284,7 +324,187 @@ exports.getDeviceTempAndHum = function(deviceInfo, cb){
     });
 }
 
+// 返回除湿机的用电量统计数据
+exports.getDeviceSummaryUsage = function(deviceInfo, cb){
+    async.auto({
+        summaryUsage:function(cb1){
+            pool.getConnection(function (error, conn) {
+                if (error) {
+                    console.log(error)
+                    cb1("error_db_connect", null);
+                } else {
+                    // 只取数据库中id为1的那一条
+                    let sql = heredoc(function () {/*
+                     call spq_summary_device_usage_data(?,?,?)
+                     */});
+                    // console.log(sql)
+                    let sqlParams = [deviceInfo.areaNum, deviceInfo.boxNum, deviceInfo.devNum]
+                    conn.query(sql, sqlParams, function (error, rows) {
+                        conn.release();
+                        if (error) {
+                            console.log(error)
+                            cb1("error_db_query", null);
+                        } else {
+                            cb1(null, rows[0]);
+                        }
+                    });
+                }
+            });
+        }
+    },function(err,results){
+        if (err) {
+            cb({"errorCode":-1,"errorMsg":'获取概览数据失败'},null);
+        } else {
+            cb(null,results.summaryUsage);
+        }
+    });
+}
 
+exports.getAlarmList = function(searchParams, cb){
+    async.auto({
+        alarms:function(cb1){
+            pool.getConnection(function (error, conn) {
+                if (error) {
+                    console.log(error)
+                    cb1("error_db_connect", null);
+                } else {
+                    // 只取数据库中id为1的那一条
+                    let sql = heredoc(function () {/*
+                     call spq_alarms(?,?,?,?,?)
+                     */});
+                    // console.log(sql)
+                    let sqlParams = [searchParams.areaNum, searchParams.boxNum, searchParams.devNum, searchParams.beginDate, searchParams.endDate]
+                    conn.query(sql, sqlParams, function (error, rows) {
+                        conn.release();
+                        if (error) {
+                            console.log(error)
+                            cb1("error_db_query", null);
+                        } else {
+                            cb1(null, rows[0]);
+                        }
+                    });
+                }
+            });
+        }
+    },function(err,results){
+        if (err) {
+            cb({"errorCode":-1,"errorMsg":'获取告警信息失败'},null);
+        } else {
+            cb(null,results.alarms);
+        }
+    });
+}
+
+exports.getAlarmListDT = function(param, cb){
+    /*这是datatable自带的变量*/
+    let draw   = param.sEcho;            //这个是请求时候带过来请求编号，原封不动的还给client
+    let start  = parseInt(param.start)? parseInt(param.start):0  //起始行数(不是起始页数哦)，从0开始
+    let length = parseInt(param.length)?parseInt(param.length):10; //每页的数据条数
+
+    let areaNum = parseInt(param.areaNum)
+    let boxNum = parseInt(param.boxNum)
+    let devNum = parseInt(param.devNum)
+
+    let bDate = param.beginDate? param.beginDate:""
+    let eDate = param.endDate? param.endDate:""
+
+    let beginDate = validator.isISO8601(bDate) ? moment(bDate).format("YYYY-MM-DD") : moment(new Date()).add(-1, 'month').format("YYYY-MM-DD")
+    let endDate = validator.isISO8601(eDate) ? moment(eDate).add(1, 'days').format("YYYY-MM-DD") : moment(new Date()).add(1, 'days').format("YYYY-MM-DD")
+
+    async.auto({
+            checkParam: function (cb) {
+                var whereClause = " and a.time >= '"+beginDate+"' AND a.time < '"+endDate+"' ";
+
+                if(areaNum && areaNum != -1) whereClause += " and a.area_num = " + areaNum + " "
+                if(boxNum && boxNum != -1) whereClause += " and a.box_num = " + boxNum + " "
+                if(devNum && devNum != -1) whereClause += " and a.dev_num = " + devNum + " "
+
+                cb(null,whereClause);
+            },
+            total: ['checkParam', function (cb1, results) {
+                pool.getReadOnlyConnection(function(error,conn) {
+                    if (error) {
+                        cb1("error_db_connect", null);
+                    }
+                    else {
+                        var sql = heredoc( function () {/*
+                         select count(1) AS cnt
+                         from
+                         (
+                           SELECT a.time, a.area_num, a.box_num, a.dev_num, a.type, a.status
+                                      ,sa.area_name,sb.box_name
+                                      ,t.type_name
+                           FROM    history_alarm a
+                                       LEFT JOIN sys_area sa ON a.area_num = sa.area_num
+                                       LEFT JOIN sys_box     sb ON a.box_num = sb.box_num
+                                       LEFT JOIN alarm_type t ON a.type = t.type_id
+                           WHERE  1 = 1
+                           __whereClause__
+                         ) a
+
+                         */});
+                        sql = sql.replace(/__whereClause__/,results.checkParam);
+                       // console.log(sql);
+                        conn.query( sql, function(err,rows){
+                            conn.release();
+                            if(err){
+                                cb1("error_db_query",null);
+                            }
+                            else{
+                                cb1(null,rows[0]['cnt']);
+                            }
+                        });
+
+                    }
+                });
+            }],
+            data: ['checkParam', function (cb2, results) {
+                pool.getReadOnlyConnection(function(error,conn) {
+                    if (error) {
+                        console.log("db connect error");
+                        cb2("error_db_connect", null);
+                    }
+                    else {
+                        var sql = heredoc( function () {/*
+                           SELECT a.time, a.area_num, a.box_num, a.dev_num, a.type, a.status
+                                      ,sa.area_name,sb.box_name
+                                      ,t.type_name
+                           FROM    history_alarm a
+                                       LEFT JOIN sys_area sa ON a.area_num = sa.area_num
+                                       LEFT JOIN sys_box     sb ON a.box_num = sb.box_num
+                                       LEFT JOIN alarm_type t ON a.type = t.type_id
+                           WHERE  1 = 1
+                           __whereClause__
+                           ORDER BY time,a.area_num,a.box_num,a.dev_num
+                           limit ?,?
+                         */});
+                        sql = sql.replace(/__whereClause__/,results.checkParam);
+                       console.log(sql);
+                        var sqlParams = [start,length];
+                        conn.query( sql,sqlParams, function(err,rows){
+                            conn.release();
+                            if(err){
+                                cb2("error_db_query",null);
+                            }
+                            else{
+                                cb2(null,rows);
+                            }
+                        });
+                    }
+                });
+            }]
+        },function(err,results){
+            if(err){
+                console.log(err)
+                cb({"errorCode":-1,"errorMsg":'获取告警列表失败'},null);
+            }
+            else{
+                var data = {draw:draw,data:results.data,recordsTotal:results.total,recordsFiltered:results.total};
+                cb(null,data);
+            }
+        }
+    );
+}
 
 exports.updateGlobalConfig = function(conf, cb){
     // console.log(conf)
@@ -480,6 +700,7 @@ exports.getAreaList = function(cb){
                         let sql = heredoc(function () {/*
                            SELECT area_num AS areaId,area_name AS areaName,insert_dt,update_dt
                            FROM   sys_area
+                           ORDER  BY area_num
                          */});
                         // console.log(sql)
                         conn.query(sql, function (error, rows) {
@@ -835,6 +1056,7 @@ exports.getBoxList = function(cb){
                         let sql = heredoc(function () {/*
                            SELECT b.box_num,b.box_name,b.box_ip,b.box_port,b.insert_dt,b.update_dt,b.area_num,a.area_name
                            FROM   sys_box b INNER JOIN sys_area a ON b.area_num = a.area_num
+                           ORDER  BY a.area_num, b.box_num
                          */});
                         // console.log(sql)
                         conn.query(sql, function (error, rows) {
@@ -1249,6 +1471,48 @@ exports.getAdminDeviceList = function(param, cb){
             else{
                 let data = {draw:draw,data:results.data,recordsTotal:results.total,recordsFiltered:results.total};
                 cb(null,data);
+            }
+        }
+    );
+}
+
+// 返回所有装置列表
+exports.getDeviceList = function(cb){
+    async.auto({
+            deviceList:function(cb1){
+                pool.getConnection(function (error, conn) {
+                    if (error) {
+                        console.log(error)
+                        cb1("error_db_connect", null);
+                    } else {
+                        let sql = heredoc(function () {/*
+                           SELECT d.id,d.dev_num,d.hum_set_value,d.hum_return_diff,d.hum_adjust_value,d.hum_high_limit,d.temp_high_limit,d.temp_low_limit
+                                 ,d.heat_start_temp,d.heat_return_diff,d.dev_type,d.hum_w,d.heat_w,d.insert_dt,d.update_dt
+			                     ,d.box_num,b.box_name,b.box_ip,b.box_port,b.area_num
+                                 ,a.area_name
+                           FROM   sys_device d
+                                  INNER JOIN sys_box b  ON d.box_num = b.box_num
+                                  INNER JOIN sys_area a ON b.area_num = a.area_num
+                           ORDER  BY a.area_num,b.box_num,d.dev_num
+                         */});
+                        // console.log(sql)
+                        conn.query(sql, function (error, rows) {
+                            conn.release();
+                            if (error) {
+                                console.log(error)
+                                cb1("error_db_query", null);
+                            } else {
+                                cb1(null, rows);
+                            }
+                        });
+                    }
+                });
+            }
+        },function(err,results){
+            if (err) {
+                cb({"errorCode":-1,"errorMsg":'获取区域列表失败'},null);
+            } else {
+                cb(null,results.deviceList);
             }
         }
     );

@@ -13,7 +13,17 @@
     <div class="page-content">
         <!-- BEGIN PAGE CONTENT -->
         <div class="container" style="min-height: 800px">
-            <div class="dehum-content-title ">#<%- deviceInfo.boxNum%>机柜#<%- deviceInfo.devNum%>除湿机</div>
+            <div class="dehum-content-title ">【<%- deviceInfo.areaName%>】-【<%- deviceInfo.boxName%>】#<%- deviceInfo.devNum%>除湿机</div>
+            <div class="row" style="margin-top: 15px;">
+                <div class="col-lg-12 col-md-12 dehum-content-subtitle">
+                    <span>今日报警数量</span>
+                    <span class="dehum-content-subtitle-value" id="span_alarm_today">
+                        <a href="#">
+                            <%- deviceInfo.cnt_alarms%>
+                        </a>
+                    </span>
+                </div>
+            </div>
             <div class="row" style="margin-top: 15px;">
                 <div class="col-lg-6 col-md-6">
                     <div class="dehum-content-subtitle dehum-div-border">
@@ -41,7 +51,7 @@
                         <span>加热时间/用电</span>
                     </div>
                     <div class="dehum-div-border text-center">
-                        <div id="div_chart_heat_usage" style="height:150px; width: 100%;">
+                        <div id="div_chart_heat_usage" style="height:300px; width: 100%;">
                         </div>
                     </div>
                 </div>
@@ -50,7 +60,7 @@
                         <span>除湿时间/用电</span>
                     </div>
                     <div class="dehum-div-border">
-                        <div id="div_chart_dehum_usage" style="height:150px; width: 100%;">
+                        <div id="div_chart_dehum_usage" style="height:300px; width: 100%;">
 
                         </div>
                     </div>
@@ -87,12 +97,23 @@
             time.push(label);
         }
 
-
         let temperature = []
         let hum = []
 
         let chartTemp = echarts.init(document.getElementById('div_chart_temp'), 'dark');
         let chartHum = echarts.init(document.getElementById('div_chart_hum'), 'dark');
+
+        chartTemp.showLoading({
+            text: '数据正在加载...',
+            textStyle: { fontSize : 30 , color: '#444' },
+            effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}
+        });
+
+        chartHum.showLoading({
+            text: '数据正在加载...',
+            textStyle: { fontSize : 30 , color: '#444' },
+            effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}
+        });
 
         let optionChartTemp = {
             tooltip: {
@@ -188,13 +209,207 @@
                 hum[hh*60+mi] = dataChart[i].hum_value
             }
             chartTemp.setOption(optionChartTemp, true)
+            chartTemp.hideLoading()
             chartHum.setOption(optionChartHum, true)
+            chartHum.hideLoading()
         })
     }
 
+    function drawChartUsage(){
+        let calDt = []
+        let dehumTime = []
+        let dehumWH = []
+        let heatTime = []
+        let heatWH = []
+
+        let chart3 = echarts.init(document.getElementById('div_chart_heat_usage'), 'dark');
+        let chart4 = echarts.init(document.getElementById('div_chart_dehum_usage'), 'dark');
+
+        chart3.showLoading({
+            text: '数据正在加载...',
+            textStyle: { fontSize : 30 , color: '#444' },
+            effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}
+        });
+
+        chart4.showLoading({
+            text: '数据正在加载...',
+            textStyle: { fontSize : 30 , color: '#444' },
+            effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}
+        });
+
+        let option3 = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    crossStyle: {
+                        color: '#999'
+                    }
+                }
+            },
+            legend: {
+                data: ['除湿时间', '除湿用电']
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    data: calDt,
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+                    name: '时长',
+                    min: 0,
+                    max: 1200,
+                    interval: 200,
+                    axisLabel: {
+                        formatter: '{value} s'
+                    }
+                },
+                {
+                    type: 'value',
+                    name: '电量',
+                    min: 0,
+                    max: 1200,
+                    interval: 200,
+                    axisLabel: {
+                        formatter: '{value} Wh'
+                    }
+                }
+            ],
+            series: [
+                {
+                    name: '除湿时间',
+                    type: 'bar',
+                    data: dehumTime
+                },
+                {
+                    name: '除湿用电',
+                    type: 'line',
+                    yAxisIndex: 1,
+                    data: dehumWH
+                }
+            ]
+        }
+
+        let option4 = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    crossStyle: {
+                        color: '#999'
+                    }
+                }
+            },
+            legend: {
+                data: ['加热时间', '加热用电']
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    data: calDt,
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+                    name: '时长',
+                    min: 0,
+                    max: 900,
+                    interval: 150,
+                    axisLabel: {
+                        formatter: '{value} s'
+                    }
+                },
+                {
+                    type: 'value',
+                    name: '电量',
+                    min: 0,
+                    max: 900,
+                    interval: 150,
+                    axisLabel: {
+                        formatter: '{value} WH'
+                    }
+                }
+            ],
+            series: [
+                {
+                    name: '加热时间',
+                    type: 'bar',
+                    data: heatTime
+                },
+                {
+                    name: '加热用电',
+                    type: 'line',
+                    yAxisIndex: 1,
+                    data: heatWH
+                }
+            ]
+        }
+
+        $.ajax({
+            url:'/ajax/device/summaryUsage',
+            method:'GET',
+            data:deviceInfo
+        }).done(function(data) {
+            let chartData = data
+            for(var i in chartData){
+                calDt.push(moment(chartData[i].cal_dt).format('YYYY-MM-DD'))
+                dehumTime.push(chartData[i].dehum_total_time)
+                dehumWH.push(chartData[i].dehum_total_wh)
+                heatTime.push(chartData[i].heat_total_time)
+                heatWH.push(chartData[i].heat_total_wh)
+            }
+
+            //重新计算X/Y轴的最大最小值
+            var maxDehumTime = Math.max.apply(null, dehumTime.concat(1200))
+            var maxDehumTimeY = Math.ceil(maxDehumTime/600)*600
+            var intervalDehumTimeY = maxDehumTimeY/6
+            option3.yAxis[0].max = maxDehumTimeY
+            option3.yAxis[0].interval = intervalDehumTimeY
+
+            var maxDehumWh = Math.max.apply(null, dehumWH.concat(1200))
+            var maxDehumWhY = Math.ceil(maxDehumWh/600)*600
+            var intervalDehumWhY = maxDehumWhY/6
+            option3.yAxis[1].max = maxDehumWhY
+            option3.yAxis[1].interval = intervalDehumWhY
+
+            var maxHeatTime = Math.max.apply(null, heatTime.concat(1200))
+            var maxHeatTimeY = Math.ceil(maxHeatTime/600)*600
+            var intervalHeatTimeY = maxHeatTimeY/6
+            option4.yAxis[0].max = maxHeatTimeY
+            option4.yAxis[0].interval = intervalHeatTimeY
+
+            var maxHeatWh = Math.max.apply(null, heatWH.concat(1200))
+            var maxHeatWhY = Math.ceil(maxHeatWh/600)*600
+            var intervalHeatWhY = maxHeatWhY/6
+            option4.yAxis[1].max = maxHeatWhY
+            option4.yAxis[1].interval = intervalHeatWhY
+
+            chart3.setOption(option3, true)
+            chart3.hideLoading()
+            chart4.setOption(option4, true)
+            chart4.hideLoading()
+        })
+    }
 
     function initPage(){
         drawChartTempAndHum()
+        drawChartUsage()
+
+        let beginDate = moment(new Date()).format("YYYY-MM-DD")
+        let endDate = moment(new Date()).format("YYYY-MM-DD")
+        strHref = "/alarms?dev=<%- deviceInfo.areaNum%>_<%- deviceInfo.boxNum%>_<%- deviceInfo.devNum%>&beginDate="+beginDate+"&endDate="+endDate
+        // alert(strHref)
+        $('#span_alarm_today a').attr("href", strHref)
     }
 
     $(document).ready(initPage)

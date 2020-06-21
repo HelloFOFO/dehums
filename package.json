@@ -16,6 +16,7 @@
     "morgan": "~1.9.1",
     "mysql": "^2.10.2",
     "underscore": "^1.8.3",
-    "validator": "^13.0.0"
+    "validator": "^13.0.0",
+    "moment": "^2.12.0"
   }
 }
