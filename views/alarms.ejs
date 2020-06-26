@@ -91,7 +91,6 @@
 <!-- END PAGE LEVEL SCRIPTS IF NEEDED -->
 
 <script>
-
     let searchParam = {areaNum: -1, boxNum: -1, devNum: -1}
     let req = getRequest()
     if(req.dev){
@@ -292,7 +291,10 @@
                         "targets": 5,
                         "data":"status",
                         "width":"10%",
-                        "class": "dehum-td-align-center"
+                        "class": "dehum-td-align-center",
+                        "render":function(data,type,row){
+                            return data == 0 ? "<span style=\"color:red\">告警</span>":"恢复";
+                        }
                     }
                 ]
             }

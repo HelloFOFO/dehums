@@ -1,13 +1,17 @@
-var createError = require('http-errors');
-var express = require('express');
-var session = require('express-session');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+let createError = require('http-errors');
+let express = require('express');
+let session = require('express-session');
+let path = require('path');
+let cookieParser = require('cookie-parser');
+let schedule = require('node-schedule');
+let dbService = require('./service/dbService')
+let logger = require('morgan');
 
-var webRouter = require('./routes/webRouter');
+let webRouter = require('./routes/webRouter');
 
-var app = express();
+let app = express();
+
+schedule.scheduleJob('30 21 * * *', dbService.job_update_sd_dehum_dd)
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

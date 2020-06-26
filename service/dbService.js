@@ -2015,3 +2015,40 @@ exports.signalDevConfig = function(cb){
         }
     )
 }
+
+
+exports.job_update_sd_dehum_dd = function(){
+    async.auto({
+        do_update: function (cb1) {
+            pool.getReadOnlyConnection(function(error,conn) {
+                if (error) {
+                    console.log("db connect error");
+                    cb1("error_db_connect", null);
+                }
+                else {
+                    var cal_dt = moment().add(-1, 'days').format('YYYY-MM-DD');
+                    var sqlParams = [cal_dt]
+                    var sql = heredoc( function () {/*
+                     CALL spb_update_sd_dehum_dd(?)
+                     */});
+                    console.log(sql, sqlParams)
+                    conn.query( sql, sqlParams, function(err){
+                        conn.release();
+                        if(err){
+                            console.log("db query error");
+                            cb1("error_db_query");
+                        }
+                        else{
+                            cb1(null);
+                        }
+                    });
+
+                }
+            });
+        }
+    },function(err){
+        if(err){
+            console.log(err)
+        }
+    });
+}
