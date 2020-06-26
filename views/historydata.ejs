@@ -1,0 +1,444 @@
+<!-- BEGIN HEADER -->
+<%include widget/header%>
+<!-- END HEADER -->
+
+<!--BEGIN LOAD PAGE LEVEL CSS STYLE-->
+<!-- IF YOU HAVE PAGE LEVEL CSS-->
+<link href="/css/pages/historydata.css" rel="stylesheet" media="screen">
+<!--END LOAD PAGE LEVEL CSS STYLE-->
+
+<!-- BEGIN PAGE CONTAINER -->
+<div class="page-container">
+    <div class="page-content">
+        <!-- BEGIN PAGE CONTENT -->
+        <div class="container">
+            <div class="row" style="padding-left:15px;padding-right:15px;">
+                <div class="col-md-12 col-lg-12 dehum-content-title">
+                    历史数据查询
+                </div>
+            </div>
+            <div class="row" style="padding-left:15px;padding-right:15px; margin-top: 20px;">
+                <div class="col-lg-10 col-md-10">
+                    <div class="row">
+                        <div class="col-md-3 col-lg-3">
+                            <div class="input-group">
+                                <span class="input-group-addon" id="span_area">区域</span>
+                                <select id="dlst_area" class="form-control"  aria-describedby="span_area">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-lg-3">
+                            <div class="input-group">
+                                <span class="input-group-addon" id="span_box">机柜</span>
+                                <select id="dlst_box" class="form-control"  aria-describedby="span_box">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-lg-3">
+                            <div class="input-group">
+                                <span class="input-group-addon" id="span_device">装置</span>
+                                <select id="dlst_device" class="form-control"  aria-describedby="span_device">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-lg-3">
+                            <div class="input-group">
+                                <span class="input-group-addon" id="span_type">测量类型</span>
+                                <select id="dlst_type" class="form-control"  aria-describedby="span_type">
+                                    <option value="TEMP" selected>温度</option>
+                                    <option value="HUM">湿度</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-2">
+                    <div class="row"  style="text-align: center">
+                        <button class="btn btn-primary disabled" id="btn_add_point" style="width: 100px;">添加测点</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row margin-bottom-30" style="padding-left:15px;padding-right:15px; margin-top: 20px;">
+                <div class="col-md-12">
+                    <div style="margin-top: 10px; font-size: 18px;" >
+                        <span class="fa fa-tasks"></span>&nbsp;&nbsp;测点数据
+                    </div>
+                    <hr class="simple" color="lightgrey" style="height: 1px; margin-top: 5px;margin-bottom: 5px;" />
+                    <div id="div_pointlist" class="col-md-12">
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" style="padding-left:15px;padding-right:15px;">
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="请选择日期..." id="searchDate" readonly style="cursor: pointer">
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary" type="button" onclick="drawChart()">查询</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" style="padding-left:15px;padding-right:15px; margin-top: 20px;">
+                <div class="col-md-12">
+                    <div style="margin-top: 10px; font-size: 18px; " >
+                        <span class="fa fa-tasks" aria-hidden="true"></span>&nbsp;&nbsp;数据显示
+                    </div>
+                    <hr class="simple" color="lightgrey" style="height: 1px; margin-top: 5px;" />
+                    <div id="mainChart" style="height:480px">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- END PAGE CONTENT -->
+    </div>
+</div>
+<!-- END PAGE CONTAINER -->
+
+
+
+<!-- BEGIN FOOTER -->
+<%include widget/footer%>
+<!-- END FOOTER -->
+
+
+<!-- BEGIN PAGE LEVEL SCRIPTS IF NEEDED-->
+<script type="text/javascript" src="/assets/plugins/validator.min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/underscore-min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/moment.min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/jquery-ui/jquery-ui.min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/jquery-datatable/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="/js/list_area_box_dev.js" ></script>
+<!-- END PAGE LEVEL SCRIPTS IF NEEDED -->
+
+<script>
+    let areaList = []
+    let boxList = []
+    let deviceList = []
+
+    let bAreaListLoaded = false
+    let bBoxListLoaded = false
+    let bDeviceListLoaded = false
+    let bAllLoaded = false
+
+    let selectedAreaNum = "" // 当前选择的区域，默认为空
+    let selectedBoxNum = "" // 当前选择的机柜，默认为空
+    let selectedDevNum = "" // 当前选择的装置，默认为空
+    // let selectedType = "TEMP" // 当前选择的类型，默认为温度（和下拉框一致）
+
+    let selectedPoint = {}
+
+    let url_data = '/ajax/devicedata?points='
+
+    let myChart = echarts.init(document.getElementById('mainChart'), 'dark');
+
+    // 画图，这儿为了快，直接函数里面把所有功能都完成了；
+    function drawChart(){
+        if(Object.keys(selectedPoint).length == 0){
+            alert('请先添加测点')
+            return
+        }
+        if($("#searchDate").val() == ""){
+            alert('请先选择日期')
+            return
+        }
+
+        //初始的空白option
+        var option = {
+            grid:{
+                x:60,
+                x2:1,
+                y:50
+            },
+            tooltip: {
+                show: true,
+                trigger: 'axis'
+            },
+            legend: {
+                x: 'left',
+                data:[]
+            },
+            dataZoom : {
+                show : true,
+                realtime : false,
+                fillerColor: 'rgba(135,200,250,0.5)',
+                start : 0,
+                end : 100
+            },
+            toolbox: {
+                show : true,//是否显示工具栏组件
+                orient: 'horizontal',//工具栏icon的布局朝向
+                x: 'right',
+                y: 'top',
+                color : ['#1e90ff','#22bb22','#4b0082','#d2691e'],
+                backgroundColor: 'rgba(0,0,0,0)', // 工具箱背景颜色
+                borderColor: '#ccc',       // 工具箱边框颜色
+                borderWidth: 0,            // 工具箱边框线宽，单位px，默认为0（无边框）
+                padding: [25, 10, 0, 0],                // 工具箱内边距，单位px，默认各方向内边距为5，
+                showTitle: true//是否在鼠标hover时显示每个工具icon标题
+
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    data : [],
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    boundaryGap:[0, 0],
+                    scale: true,
+                    min: 0,
+                    max: 80,
+                    axisTick : {    // 轴标记
+                        show:true,
+                        lineStyle: {
+                            color: 'rgba(57,168,232,1)',
+                            type: 'solid',
+                            width: 1
+                        }
+                    },
+                    axisLabel : {
+                        show:true,
+                        textStyle: {
+                            color: 'black',
+                            fontFamily: 'Arial',
+                            fontSize: 12,
+                            fontStyle: 'normal',
+                            fontWeight: 'normal'
+                        }
+                    },
+                    splitArea : {
+                        show: true,
+                        onGap: null,
+                        areaStyle:{
+                            color:['rgba(250,250,200,0.1)','rgba(135,200,250,0.2)']
+                        }
+                    },
+                }
+            ],
+            series : []
+        };
+
+        let url = url_data+Object.keys(selectedPoint).join('|')+'&date='+$("#searchDate").val()
+        $.getJSON(url, function(data) {
+            // 一分钟一个点
+            for (var i = 0; i <= 1440; i++) {
+                var min = (i % 60);
+                if (min < 10)
+                    min = "0" + min
+                var hour = parseInt(i / 60)
+                if (hour < 10)
+                    hour = "0" + hour
+                var label = hour + ":" + min;
+                option.xAxis[0].data[i] = label;
+            }
+
+            // //五分钟一个点
+            // for(var i=0; i<=288; i++)
+            // {
+            //     var min = (i%12)*5;
+            //     if(min < 10)
+            //         min = "0"+min;
+            //     var label = parseInt(i/12) + ":" + min;
+            //     option.xAxis[0].data[i] = label;
+            // }
+            for(i =0; i< Object.keys(selectedPoint).length; i++){
+                if(Object.keys(selectedPoint)[i].indexOf("湿度") > -1){
+                    option.yAxis[0].max = 100
+                }
+                if(Object.keys(selectedPoint)[i].indexOf("温度") > -1){
+                    option.yAxis[0].min = -20
+                }
+            }
+
+            for (i = 0; i < data.length; ++i) {
+                var seriesData = {
+                    type: "line",
+                    name: selectedPoint[data[i].point],
+                    data: data[i].data,
+                    markPoint: {symbolSize: 70, data: [{type: 'max', name: '最大值'}, {type: 'min', name: '最小值'}]}
+                };
+                // alert(JSON.stringify(seriesData))
+                option.series.push(seriesData);
+                option.legend.data.push(selectedPoint[data[i].point]);
+            }
+
+            // 为echarts对象加载数据
+            myChart.setOption(option, true);
+        })
+
+        $(window).resize(function () {
+            myChart.resize(option);
+        });
+
+    }
+
+    $.ajax({
+        url:"/ajax/arealist",
+        async:true,
+        method:'GET'
+    }).done(function(data){
+        areaList = data.data
+        bAreaListLoaded = true
+    })
+
+    $.ajax({
+        url:"/ajax/boxlist",
+        async:true,
+        method:'GET'
+    }).done(function(data){
+        boxList = data.data
+        bBoxListLoaded = true
+    })
+
+    $.ajax({
+        url:"/ajax/devicelist",
+        async:true,
+        method:'GET'
+    }).done(function(data){
+        deviceList = data.data
+        bDeviceListLoaded = true
+    })
+
+
+    let bindArea = function(){
+        // alert(1)
+        $('#dlst_area').empty()
+        var html = "<option value=\"\">区域</option>"
+        for(var i in areaList){
+            html+='<option value="_Id_">_Name_</option>'
+                .replace(/_Id_/,areaList[i].areaId)
+                .replace(/_Name_/,areaList[i].areaName);
+        }
+        $('#dlst_area').append(html)
+        selectedAreaNum = $('#dlst_area').val()
+    }
+
+    $('#dlst_area').change(function(){
+        selectedAreaNum = $('#dlst_area').val()
+        bindBox()
+        bindDevice()
+    })
+
+
+    let bindBox = function(){
+        $('#dlst_box').empty()
+        var html = "<option value=\"\">机柜</option>"
+        if(selectedAreaNum != ""){
+            let boxes = _.filter(boxList, function(box){return box.area_num == selectedAreaNum;})
+            for(var i in boxes){
+                html+='<option value="_Id_">_Name_</option>'
+                    .replace(/_Id_/,boxes[i].box_num)
+                    .replace(/_Name_/,boxes[i].box_name);
+            }
+        }
+        $('#dlst_box').append(html)
+        selectedBoxNum = $('#dlst_box').val()
+    }
+
+    $('#dlst_box').change(function(){
+        selectedBoxNum = $('#dlst_box').val()
+        bindDevice()
+    })
+
+    let bindDevice = function(){
+        $('#dlst_device').empty()
+        var html = "<option value=\"\">除湿机</option>"
+        if(selectedAreaNum != "" && selectedBoxNum != ""){
+            let devices = _.filter(deviceList, function(device){return device.area_num == selectedAreaNum && device.box_num == selectedBoxNum;})
+            for(var i in devices){
+                html+='<option value="_Id_">_Name_</option>'
+                    .replace(/_Id_/,devices[i].dev_num)
+                    .replace(/_Name_/,devices[i].dev_num);
+            }
+        }
+        $('#dlst_device').append(html)
+        selectedDevNum = $('#dlst_device').val()
+    }
+
+    $('#dlst_device').change(function(){
+        selectedDevNum = $('#dlst_device').val()
+    })
+
+
+    let enableAddPoint = function(){
+        $('#btn_add_point').removeClass("disabled")
+    }
+
+    function initMe() {
+        $('#btn_add_point').click(function(){
+            if(selectedAreaNum == ""){
+                alert("请先选择--区域--")
+                return
+            }
+            if(selectedBoxNum == ""){
+                alert("请先选择--机柜--")
+                return
+            }
+            if(selectedDevNum == ""){
+                alert("请先选择--除湿机--")
+                return
+            }
+
+            let selectedKey = selectedAreaNum+"_"+selectedBoxNum+"_"+selectedDevNum+"_"+$('#dlst_type').val()
+            // alert(selectedKey)
+
+            let selectedValue = "区域["+$('#dlst_area option:checked').text()+"]-机柜["+$('#dlst_box option:checked').text()+"]-除湿机["+$('#dlst_device option:checked').text()+"]-"+$('#dlst_type option:checked').text()
+            // alert(selectedValue)
+            if(selectedPoint[selectedKey]){
+                alert("已经添加了该测点")
+            }
+            else{
+                selectedPoint[selectedKey] = selectedValue
+                let divCheckType = "<div class='div_check_type' data-selectedkey='"+selectedKey+"'>"+selectedValue+"&nbsp;<span style='cursor:pointer' class='fa fa-remove'></span></div>"
+                $("#div_pointlist").append(divCheckType)
+            }
+        })
+
+
+        // "已添加的测点"删除按钮点击事件
+        $(document).on("click",'.div_check_type span',function(){
+            // alert($(this).parent().text())
+            keyToDelete = $(this).parent().data('selectedkey')
+            $(this).parent().remove()
+            delete selectedPoint[keyToDelete]
+        })
+
+        $('#searchDate').datepicker({dateFormat: "yy-mm-dd"});
+
+        // 等全部的数据从服务器返回后，再绑定下拉列表
+        let loadInterval = setInterval(function(){
+            // alert('--check load--')
+            bAllLoaded = bAreaListLoaded && bBoxListLoaded && bDeviceListLoaded
+            if(bAllLoaded) {
+                // alert('--all loaded--')
+                bindArea()
+                bindBox()
+                bindDevice()
+
+                enableAddPoint()
+
+                clearInterval(loadInterval)
+            }
+        }, 1000)
+
+    }
+
+    jQuery(document).ready(function() {
+        initMe()
+    });
+
+
+
+</script>
+
+
+</body>
+</html>

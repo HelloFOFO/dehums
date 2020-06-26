@@ -254,7 +254,7 @@ WHERE  a.time >= v_begin_date
        AND (v_area_num = -1 OR v_area_num = a.area_num)
        AND (v_box_num = -1 OR v_box_num = a.box_num)
        AND (v_dev_num = -1 OR v_dev_num = a.dev_num)
-ORDER  BY time,a.area_num,a.box_num,a.dev_num;
+ORDER  BY time DESC,a.area_num,a.box_num,a.dev_num;
 
 END$$
 DELIMITER ;

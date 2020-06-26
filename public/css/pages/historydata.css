@@ -1,0 +1,19 @@
+.div_check_type{
+    float: left;
+    margin-left: 5px;
+    padding: 8px;
+    background-color: lightgrey;
+    border-radius: 3px !important;
+    height: 36px;
+    font-size: 16px;
+    color: #e94d1c;
+    border: 1px solid grey;
+    margin-bottom: 5px;
+    position: relative;
+}
+
+#div_pointlist{
+    min-height: 50px;background-color: lightgrey; border-radius:5px !important;
+    padding: 10px 10px;height: auto !important;
+
+}

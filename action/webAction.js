@@ -230,8 +230,32 @@ exports.getAlarmListDT = function(req ,res){
 }
 
 exports.renderAlarms = function(req, res){
-    res.render('alarms', {title: '告警查询'})
+    res.render('alarms', {title: "告警查询"})
 }
+
+exports.renderHistoryData = function(req, res){
+    res.render('historydata', {title: "历史数据查询"})
+}
+
+
+exports.getDeviceData = function(req, res){
+    let points = req.query.points.split('|')
+    let date = req.query.date
+    if(points && points.length > 0 && date) {
+        dbService.getPointData(points, date, function (err, data) {
+            if (err) {
+                res.json('[]')
+            }
+            else {
+                res.json(data)
+            }
+        })
+    }
+    else{
+        res.json('[]')
+    }
+}
+
 
 
 

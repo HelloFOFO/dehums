@@ -475,7 +475,7 @@ exports.getAlarmListDT = function(param, cb){
                                        LEFT JOIN alarm_type t ON a.type = t.type_id
                            WHERE  1 = 1
                            __whereClause__
-                           ORDER BY time,a.area_num,a.box_num,a.dev_num
+                           ORDER BY time DESC,a.area_num,a.box_num,a.dev_num
                            limit ?,?
                          */});
                         sql = sql.replace(/__whereClause__/,results.checkParam);
@@ -505,6 +505,61 @@ exports.getAlarmListDT = function(param, cb){
         }
     );
 }
+
+
+exports.getPointData = function(points, date, cb){
+    async.concat(points,
+        function(point, cb1){
+            pool.getReadOnlyConnection(function(error,conn){
+                if(error){
+                    console.log("db connect error");
+                    cb1(null, null);
+                }
+                else{
+                    var sql = heredoc( function () {/*
+                                 select __COLUMN__
+                                 from   history_data
+                                 where  area_num = ? AND box_num = ? AND dev_num = ? AND valid = 1 AND datediff(time,?) = 0
+                                 order  by time
+                                 */});
+
+                    var point_info = point.split('_')
+                    var column_name = point_info[3] == 'TEMP' ? 'temp_value': 'hum_value'
+                    sql = sql.replace('__COLUMN__', column_name)
+
+                    var sqlParams = []
+                    sqlParams.push(point_info[0])
+                    sqlParams.push(point_info[1])
+                    sqlParams.push(point_info[2])
+                    sqlParams.push(date)
+
+                    conn.query( sql, sqlParams, function(err,rows){
+                        conn.release();
+                        if(err){
+                            console.log("db query error");
+                            cb1(null, null);
+                        }
+                        else{
+                            var array_point = []
+                            for(i=0; i<rows.length; i++)
+                                array_point.push(rows[i][column_name])
+                            var array_data = {
+                                'point': point,
+                                'data': array_point
+                            }
+                            cb1(null, array_data);
+                        }
+                    });
+                }
+            });
+        },
+        function(err, results){
+            console.log(results.length)
+            cb(null, results)
+        }
+    )
+}
+
 
 exports.updateGlobalConfig = function(conf, cb){
     // console.log(conf)
