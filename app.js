@@ -11,7 +11,7 @@ let webRouter = require('./routes/webRouter');
 
 let app = express();
 
-schedule.scheduleJob('30 21 * * *', dbService.job_update_sd_dehum_dd)
+schedule.scheduleJob('30 05 * * *', dbService.job_update_sd_dehum_dd)
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

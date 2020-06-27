@@ -115,6 +115,9 @@ BEGIN
 DELETE FROM sd_dehum_dd WHERE DATEDIFF(cal_dt , v_cal_dt) = 0;
 
 SET @rank:=0;
+SET @current_area_num := 0;
+SET @current_box_num := 0;
+SET @current_dev_num := 0;
 
 INSERT INTO sd_dehum_dd(cal_dt, last_time, area_num, box_num, dev_num, hum_value, temp_value, valid
 		   , dehum_state, heat_state, dehum_total_time, heat_total_time, hum_set_value, hum_return_diff, hum_adjust_value 
@@ -127,7 +130,7 @@ SELECT h.*
               ,@rank:= CASE WHEN @current_area_num = h.area_num AND @current_box_num = h.box_num AND @current_dev_num = h.dev_num THEN @rank+1 ELSE 1 END AS rank
 			  ,@current_area_num:= h.area_num,@current_box_num:= h.box_num,@current_dev_num:= h.dev_num
 FROM     history_data h
-WHERE  DATEDIFF(v_cal_dt, h.time) = 0 
+WHERE  DATEDIFF(v_cal_dt, h.time) = 0 AND valid = 1
 ORDER  BY h.area_num ASC,h.box_num ASC,h.dev_num ASC,time DESC
 ) d
 WHERE  rank = 1;

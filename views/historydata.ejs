@@ -152,7 +152,7 @@
         var option = {
             grid:{
                 x:60,
-                x2:1,
+                x2:10,
                 y:50
             },
             tooltip: {
@@ -170,19 +170,6 @@
                 start : 0,
                 end : 100
             },
-            toolbox: {
-                show : true,//是否显示工具栏组件
-                orient: 'horizontal',//工具栏icon的布局朝向
-                x: 'right',
-                y: 'top',
-                color : ['#1e90ff','#22bb22','#4b0082','#d2691e'],
-                backgroundColor: 'rgba(0,0,0,0)', // 工具箱背景颜色
-                borderColor: '#ccc',       // 工具箱边框颜色
-                borderWidth: 0,            // 工具箱边框线宽，单位px，默认为0（无边框）
-                padding: [25, 10, 0, 0],                // 工具箱内边距，单位px，默认各方向内边距为5，
-                showTitle: true//是否在鼠标hover时显示每个工具icon标题
-
-            },
             xAxis : [
                 {
                     type : 'category',
@@ -196,31 +183,31 @@
                     scale: true,
                     min: 0,
                     max: 80,
-                    axisTick : {    // 轴标记
-                        show:true,
-                        lineStyle: {
-                            color: 'rgba(57,168,232,1)',
-                            type: 'solid',
-                            width: 1
-                        }
-                    },
-                    axisLabel : {
-                        show:true,
-                        textStyle: {
-                            color: 'black',
-                            fontFamily: 'Arial',
-                            fontSize: 12,
-                            fontStyle: 'normal',
-                            fontWeight: 'normal'
-                        }
-                    },
-                    splitArea : {
-                        show: true,
-                        onGap: null,
-                        areaStyle:{
-                            color:['rgba(250,250,200,0.1)','rgba(135,200,250,0.2)']
-                        }
-                    },
+                    // axisTick : {    // 轴标记
+                    //     show:true,
+                    //     lineStyle: {
+                    //         color: 'rgba(57,168,232,1)',
+                    //         type: 'solid',
+                    //         width: 1
+                    //     }
+                    // },
+                    // axisLabel : {
+                    //     show:true,
+                    //     textStyle: {
+                    //         color: 'black',
+                    //         fontFamily: 'Arial',
+                    //         fontSize: 12,
+                    //         fontStyle: 'normal',
+                    //         fontWeight: 'normal'
+                    //     }
+                    // },
+                    // splitArea : {
+                    //     show: true,
+                    //     onGap: null,
+                    //     areaStyle:{
+                    //         color:['rgba(250,250,200,0.1)','rgba(135,200,250,0.2)']
+                    //     }
+                    // },
                 }
             ],
             series : []
@@ -250,10 +237,10 @@
             //     option.xAxis[0].data[i] = label;
             // }
             for(i =0; i< Object.keys(selectedPoint).length; i++){
-                if(Object.keys(selectedPoint)[i].indexOf("湿度") > -1){
+                if(Object.keys(selectedPoint)[i].indexOf("HUM") > -1){
                     option.yAxis[0].max = 100
                 }
-                if(Object.keys(selectedPoint)[i].indexOf("温度") > -1){
+                if(Object.keys(selectedPoint)[i].indexOf("TEMP") > -1){
                     option.yAxis[0].min = -20
                 }
             }
