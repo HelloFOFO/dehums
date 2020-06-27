@@ -294,11 +294,10 @@ exports.getDeviceTempAndHum = function(deviceInfo, cb){
                     console.log(error)
                     cb1("error_db_connect", null);
                 } else {
-                    // 只取数据库中id为1的那一条
                     let sql = heredoc(function () {/*
                      select time,hum_value,temp_value
                      from   history_data
-                     where  area_num = ? and box_num = ? and dev_num = ? and datediff(time,current_date()) = 0
+                     where  area_num = ? and box_num = ? and dev_num = ? and datediff(time,current_date()) = 0 and valid = 1
                      order  by time asc
                      */});
                     // console.log(sql)
@@ -519,7 +518,7 @@ exports.getPointData = function(points, date, cb){
                     var sql = heredoc( function () {/*
                                  select __COLUMN__
                                  from   history_data
-                                 where  area_num = ? AND box_num = ? AND dev_num = ? AND valid = 1 AND datediff(time,?) = 0
+                                 where  area_num = ? AND box_num = ? AND dev_num = ? AND valid = 1 AND datediff(time,?) = 0 and valid = 1
                                  order  by time
                                  */});
 
