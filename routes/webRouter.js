@@ -23,6 +23,9 @@ router.get('/historyData', web.renderHistoryData)
 // devicedata?points=1_1_1_TEMP|1_1_1_HUM&date=2019-08-04 这样的请求
 router.get('/ajax/devicedata', web.getDeviceData)
 
+router.get('/download', web.renderDownload)
+router.get('/ajax/getExcel', web.getExcel)
+
 
 // 下面是管理配置相关的页面；
 

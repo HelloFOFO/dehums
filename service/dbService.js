@@ -505,7 +505,6 @@ exports.getAlarmListDT = function(param, cb){
     );
 }
 
-
 exports.getPointData = function(points, date, cb){
     async.concat(points,
         function(point, cb1){
@@ -559,6 +558,46 @@ exports.getPointData = function(points, date, cb){
     )
 }
 
+exports.getDownloadData = function(param, cb){
+    async.auto({
+        hisData:function(cb1){
+            pool.getConnection(function (error, conn) {
+                if (error) {
+                    console.log(error)
+                    cb1("error_db_connect", null);
+                } else {
+                    // 只取数据库中id为1的那一条
+                    let sql = heredoc(function () {/*
+                     SELECT time, area_num, box_num, dev_num, hum_value, temp_value, valid, dehum_state, heat_state, dehum_total_time, heat_total_time, hum_set_value, hum_return_diff, hum_adjust_value, heat_start_temp, heat_return_diff, dehum_total_wh, heat_total_wh, upload_flag
+                     FROM   history_data
+                     WHERE  area_num = ? AND box_num = ? AND dev_num = ?
+                        AND time >= ?  AND time < DATE_ADD(?, INTERVAL 1 DAY )
+                     */});
+                    // console.log(sql)
+                    let sqlParams = [param.areaNum, param.boxNum, param.devNum, param.beginDate, param.endDate]
+                    conn.query(sql, sqlParams, function (error, rows) {
+                        conn.release();
+                        if (error) {
+                            console.log(error)
+                            cb1("error_db_query", null);
+                        } else {
+                            cb1(null, rows);
+                        }
+                    });
+                }
+            });
+        }
+    },function(err,results){
+        if (err) {
+            cb({"errorCode":-1,"errorMsg":'获取概览数据失败'},null);
+        } else {
+            cb(null,results.hisData);
+        }
+    });
+}
+
+
+// 下面是管理相关的
 
 exports.updateGlobalConfig = function(conf, cb){
     // console.log(conf)

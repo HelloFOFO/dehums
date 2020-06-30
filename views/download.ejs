@@ -1,0 +1,267 @@
+<!-- BEGIN HEADER -->
+<%include widget/header%>
+<!-- END HEADER -->
+
+<!--BEGIN LOAD PAGE LEVEL CSS STYLE-->
+<!-- IF YOU HAVE PAGE LEVEL CSS-->
+<link href="/css/pages/historydata.css" rel="stylesheet" media="screen">
+<!--END LOAD PAGE LEVEL CSS STYLE-->
+
+<!-- BEGIN PAGE CONTAINER -->
+<div class="page-container">
+    <div class="page-content">
+        <!-- BEGIN PAGE CONTENT -->
+        <div class="container">
+            <div class="row" style="padding-left:15px;padding-right:15px;">
+                <div class="col-md-12 col-lg-12 dehum-content-title">
+                    历史数据下载
+                </div>
+            </div>
+            <div class="row" style="padding-left:15px;padding-right:15px; margin-top: 20px;">
+                <div class="col-lg-12 col-md-12">
+                    <div class="row">
+                        <div class="col-md-4 col-lg-4">
+                            <div class="input-group">
+                                <span class="input-group-addon" id="span_area">区域</span>
+                                <select id="dlst_area" class="form-control"  aria-describedby="span_area">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-lg-4">
+                            <div class="input-group">
+                                <span class="input-group-addon" id="span_box">机柜</span>
+                                <select id="dlst_box" class="form-control"  aria-describedby="span_box">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-lg-4">
+                            <div class="input-group">
+                                <span class="input-group-addon" id="span_device">装置</span>
+                                <select id="dlst_device" class="form-control"  aria-describedby="span_device">
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 col-lg-4 margin-top-10">
+                            <div class="input-group">
+                                <span class="input-group-addon">开始日期</span>
+                                <input type="text" class="form-control" placeholder="请选择日期..." id="searchDate_Begin" readonly style="cursor: pointer">
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-lg-4 margin-top-10">
+                            <div class="input-group">
+                                <span class="input-group-addon">结束日期</span>
+                                <input type="text" class="form-control" placeholder="请选择日期..." id="searchDate_End" readonly style="cursor: pointer">
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-lg-4 margin-top-10">
+                            <button class="btn btn-primary disabled" id="btn_download" style="width: 100px;">下载</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- END PAGE CONTENT -->
+    </div>
+</div>
+<!-- END PAGE CONTAINER -->
+
+
+
+<!-- BEGIN FOOTER -->
+<%include widget/footer%>
+<!-- END FOOTER -->
+
+
+<!-- BEGIN PAGE LEVEL SCRIPTS IF NEEDED-->
+<script type="text/javascript" src="/assets/plugins/validator.min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/underscore-min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/moment.min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/jquery-ui/jquery-ui.min.js" ></script>
+<script type="text/javascript" src="/assets/plugins/jquery-datatable/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="/js/list_area_box_dev.js" ></script>
+<!-- END PAGE LEVEL SCRIPTS IF NEEDED -->
+
+<script>
+    let areaList = []
+    let boxList = []
+    let deviceList = []
+
+    let bAreaListLoaded = false
+    let bBoxListLoaded = false
+    let bDeviceListLoaded = false
+    let bAllLoaded = false
+
+    let selectedAreaNum = "" // 当前选择的区域，默认为空
+    let selectedBoxNum = "" // 当前选择的机柜，默认为空
+    let selectedDevNum = "" // 当前选择的装置，默认为空
+    // let selectedType = "TEMP" // 当前选择的类型，默认为温度（和下拉框一致）
+
+    $.ajax({
+        url:"/ajax/arealist",
+        async:true,
+        method:'GET'
+    }).done(function(data){
+        areaList = data.data
+        bAreaListLoaded = true
+    })
+
+    $.ajax({
+        url:"/ajax/boxlist",
+        async:true,
+        method:'GET'
+    }).done(function(data){
+        boxList = data.data
+        bBoxListLoaded = true
+    })
+
+    $.ajax({
+        url:"/ajax/devicelist",
+        async:true,
+        method:'GET'
+    }).done(function(data){
+        deviceList = data.data
+        bDeviceListLoaded = true
+    })
+
+
+    let bindArea = function(){
+        // alert(1)
+        $('#dlst_area').empty()
+        var html = "<option value=\"\">区域</option>"
+        for(var i in areaList){
+            html+='<option value="_Id_">_Name_</option>'
+                .replace(/_Id_/,areaList[i].areaId)
+                .replace(/_Name_/,areaList[i].areaName);
+        }
+        $('#dlst_area').append(html)
+        selectedAreaNum = $('#dlst_area').val()
+    }
+
+    $('#dlst_area').change(function(){
+        selectedAreaNum = $('#dlst_area').val()
+        bindBox()
+        bindDevice()
+    })
+
+
+    let bindBox = function(){
+        $('#dlst_box').empty()
+        var html = "<option value=\"\">机柜</option>"
+        if(selectedAreaNum != ""){
+            let boxes = _.filter(boxList, function(box){return box.area_num == selectedAreaNum;})
+            for(var i in boxes){
+                html+='<option value="_Id_">_Name_</option>'
+                    .replace(/_Id_/,boxes[i].box_num)
+                    .replace(/_Name_/,boxes[i].box_name);
+            }
+        }
+        $('#dlst_box').append(html)
+        selectedBoxNum = $('#dlst_box').val()
+    }
+
+    $('#dlst_box').change(function(){
+        selectedBoxNum = $('#dlst_box').val()
+        bindDevice()
+    })
+
+    let bindDevice = function(){
+        $('#dlst_device').empty()
+        var html = "<option value=\"\">除湿机</option>"
+        if(selectedAreaNum != "" && selectedBoxNum != ""){
+            let devices = _.filter(deviceList, function(device){return device.area_num == selectedAreaNum && device.box_num == selectedBoxNum;})
+            for(var i in devices){
+                html+='<option value="_Id_">_Name_</option>'
+                    .replace(/_Id_/,devices[i].dev_num)
+                    .replace(/_Name_/,devices[i].dev_num);
+            }
+        }
+        $('#dlst_device').append(html)
+        selectedDevNum = $('#dlst_device').val()
+    }
+
+    $('#dlst_device').change(function(){
+        selectedDevNum = $('#dlst_device').val()
+    })
+
+    let enableDownload = function(){
+        $('#btn_download').removeClass("disabled")
+    }
+
+
+
+    function initMe() {
+        $('#btn_download').click(function(){
+            if(selectedAreaNum == ""){
+                alert("请先选择--区域--")
+                return
+            }
+            if(selectedBoxNum == ""){
+                alert("请先选择--机柜--")
+                return
+            }
+            if(selectedDevNum == ""){
+                alert("请先选择--除湿机--")
+                return
+            }
+            if($("#searchDate_Begin").val() == ""){
+                alert('请先选择开始日期')
+                return
+            }
+            if($("#searchDate_End").val() == ""){
+                alert('请先选择结束日期')
+                return
+            }
+            if(moment($("#searchDate_Begin").val()) > moment($("#searchDate_End").val())){
+                alert('开始日期【不能大于】结束日期')
+                return
+            }
+            let param = {
+                areaNum : selectedAreaNum,
+                boxNum : selectedBoxNum,
+                devNum : selectedDevNum,
+                beginDate : $("#searchDate_Begin").val(),
+                endDate : $("#searchDate_End").val()
+            }
+            let paramStr = JSON.stringify(param).replace(/:/g,"=").replace(/,/g,"&").replace(/"/g,"")
+            paramStr = paramStr.substr(1, paramStr.length-2)
+            let url = '/ajax/getExcel?'+paramStr
+            window.open(url, "_blank")
+
+        })
+
+        $('#searchDate_Begin').datepicker({dateFormat: "yy-mm-dd", minDate:moment().add(-1, 'M').format('YYYY-MM-DD'), maxDate:moment().format('YYYY-MM-DD')});
+        $('#searchDate_End').datepicker({dateFormat: "yy-mm-dd", minDate:moment().add(-1, 'M').format('YYYY-MM-DD'), maxDate:moment().format('YYYY-MM-DD')});
+
+        // 等全部的数据从服务器返回后，再绑定下拉列表
+        let loadInterval = setInterval(function(){
+            // alert('--check load--')
+            bAllLoaded = bAreaListLoaded && bBoxListLoaded && bDeviceListLoaded
+            if(bAllLoaded) {
+                // alert('--all loaded--')
+                bindArea()
+                bindBox()
+                bindDevice()
+
+                enableDownload()
+
+                clearInterval(loadInterval)
+            }
+        }, 1000)
+
+    }
+
+    jQuery(document).ready(function() {
+        initMe()
+    });
+
+
+
+</script>
+
+
+</body>
+</html>

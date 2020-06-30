@@ -1,6 +1,7 @@
 let dbService = require("./../service/dbService");
 let moment = require('moment')
 let validator = require('validator')
+let XLSX = require('xlsx')
 
 exports.renderStation = function(req, res){
     let summaryData = {
@@ -256,7 +257,39 @@ exports.getDeviceData = function(req, res){
     }
 }
 
+exports.renderDownload = function(req, res){
+    res.render('download', {title: "历史数据下载"})
+}
 
+
+exports.getExcel = function(req, res){
+    let param = req.query
+    let excelData = {
+        time: "", area_num: "", box_num: "", dev_num: "", hum_value: "", temp_value: "", valid: "", dehum_state: "", heat_state: "", dehum_total_time: "", heat_total_time: "", hum_set_value: "", hum_return_diff: "", hum_adjust_value: "", heat_start_temp: "", heat_return_diff: "", dehum_total_wh: "", heat_total_wh: "", upload_flag: ""
+    }
+    dbService.getDownloadData(param, function(err, data){
+        if(!err && data){
+            excelData = data
+        }
+        console.log("DOWNLOAD ROWS:",excelData.length)
+        let wb = XLSX.utils.book_new()
+        let ws = XLSX.utils.json_to_sheet(excelData)
+        XLSX.utils.book_append_sheet(wb, ws, 'Sheet1')
+
+        res.set({
+            "Content-Disposition": "attachment; filename=" + moment().format('YYYYMMDDHHmmss') +".xlsx",
+            "Content-Type": 'application/vnd.ms-excel'
+        })
+
+        let content = XLSX.write(wb, {
+            type: 'buffer',
+            bookType: 'xlsx'
+        })
+        // require('fs').writeFileSync('a.xls', content)
+        res.send(content)
+        // res.send(content.toString('base64'))
+    });
+}
 
 
 exports.renderAdminIndex = function(req,res){
