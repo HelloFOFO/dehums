@@ -106,6 +106,8 @@ CREATE TABLE sd_dehum_dd(
   primary key(id)
 );
 
+ALTER TABLE sd_dehum_dd ADD insert_dt datetime DEFAULT NULL;
+
 
 DROP PROCEDURE IF EXISTS spb_update_sd_dehum_dd;
 DELIMITER $$
@@ -121,10 +123,10 @@ SET @current_dev_num := 0;
 
 INSERT INTO sd_dehum_dd(cal_dt, last_time, area_num, box_num, dev_num, hum_value, temp_value, valid
 		   , dehum_state, heat_state, dehum_total_time, heat_total_time, hum_set_value, hum_return_diff, hum_adjust_value 
-		   , heat_start_temp, heat_return_diff, dehum_total_wh, heat_total_wh)
+		   , heat_start_temp, heat_return_diff, dehum_total_wh, heat_total_wh,insert_dt)
 SELECT v_cal_dt AS cal_dt,d.time AS last_time,d.area_num, d.box_num, d.dev_num, d.hum_value, d.temp_value, d.valid
 			, d.dehum_state, d.heat_state, d.dehum_total_time, d.heat_total_time, d.hum_set_value, d.hum_return_diff, d.hum_adjust_value
-			, d.heat_start_temp, d.heat_return_diff, d.dehum_total_wh, d.heat_total_wh
+			, d.heat_start_temp, d.heat_return_diff, d.dehum_total_wh, d.heat_total_wh,NOW()
 FROM(
 SELECT h.*
               ,@rank:= CASE WHEN @current_area_num = h.area_num AND @current_box_num = h.box_num AND @current_dev_num = h.dev_num THEN @rank+1 ELSE 1 END AS rank
@@ -261,3 +263,8 @@ ORDER  BY time DESC,a.area_num,a.box_num,a.dev_num;
 
 END$$
 DELIMITER ;
+
+
+
+
+
