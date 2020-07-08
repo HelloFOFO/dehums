@@ -39,18 +39,19 @@
                 <div class="col-lg-4 col-md-4">
                     <div class="dehum-content-subtitle dehum-div-border" style="min-height: 180px;">
                         <span>今日报警数量</span>
-                        <span class="dehum-content-subtitle-value" id="span_alarm_today">
-                            <a href="#">
-                                <%- summaryData.cnt_alarms%>
+                        <span class="dehum-content-subtitle-value">
+                            <a href="alarms?beginDate=<%- moment(new Date()).format("YYYY-MM-DD")%>&endDate=<%- moment(new Date()).format("YYYY-MM-DD")%>"  id="span_alarm_today">
                             </a>
                         </span>
                         <br>
                         <br>
-                        <% if( !(summaryData.wsd_lasttime_duration && summaryData.wsd_lasttime_duration <= 3)) {%>
-                            <span style="color: red">数据采集程序异常！</span>
+                        <div id="div_info_wsd">
+                            <span id="span_wsd_error" style="color: red; display: none">数据采集程序异常！</span>
                             <br>
-                            <span style="color: red">最后采集时间：<%- summaryData.wsd_lasttime ? moment(summaryData.wsd_lasttime).format('YYYY-MM-DD HH:mm') : '无'%></span>
-                        <% } %>
+                            <span style="color: white" id="span_wsd_lasttime"></span>
+                            <br>
+                            <span style="color: #4ecde2" id="span_last_req_time"></span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -86,9 +87,8 @@
 
 
 <script>
-    // 这儿偷懒一下，把后端传过来的对象直接赋值给js对象
-    let summaryData = JSON.parse('<%-JSON.stringify(summaryData)%>')
-
+    <!--// 这儿偷懒一下，把后端传过来的对象直接赋值给js对象-->
+    <!--let summaryData = JSON.parse('<%-JSON.stringify(summaryData)%>')-->
 
     function drawChart1(){
         let chart1 = echarts.init(document.getElementById('div_chart_1'), 'dark');
@@ -178,6 +178,121 @@
         }
         chart2.setOption(option2, true)
         chart2.hideLoading()
+    }
+
+    function drawChart(){
+        let dataValidDehums = []
+        let dataWorkDehums = []
+
+        let chart1 = echarts.init(document.getElementById('div_chart_1'), 'dark');
+        let chart2 = echarts.init(document.getElementById('div_chart_2'), 'dark');
+
+        chart1.showLoading({
+            text: '数据正在加载...',
+            textStyle: { fontSize : 30 , color: '#444' },
+            effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}
+        });
+
+        chart2.showLoading({
+            text: '数据正在加载...',
+            textStyle: { fontSize : 30 , color: '#444' },
+            effectOption: {backgroundColor: 'rgba(0, 0, 0, 0)'}
+        });
+
+
+        let option1 = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{b}: {c} ({d}%)'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 10,
+                data: ['在线台数', '下线台数']
+            },
+            series: [
+                {
+                    name: '除湿机数量',
+                    type: 'pie',
+                    radius: ['50%', '70%'],
+                    emphasis: {
+                        label: {
+                            show: true,
+                            fontSize: '16',
+                            fontWeight: 'bold'
+                        }
+                    },
+                    label: {
+                        show: false ,
+                        position: 'center'
+                    },
+                    data: dataValidDehums
+                }
+            ]
+        }
+
+        let option2 = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{b}: {c} ({d}%)'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 10,
+                data: ['工作台数', '待机台数']
+            },
+            series: [
+                {
+                    name: '除湿机数量',
+                    type: 'pie',
+                    radius: ['50%', '70%'],
+                    emphasis: {
+                        label: {
+                            show: true,
+                            fontSize: '16',
+                            fontWeight: 'bold'
+                        }
+                    },
+                    label: {
+                        show: false ,
+                        position: 'center'
+                    },
+                    data: dataWorkDehums
+                }
+            ]
+        }
+
+
+        $.getJSON('/ajax/summary', function(data){
+            let summaryData = data.data
+            // alert(JSON.stringify(summaryData))
+
+            dataValidDehums.push({value: summaryData.total_valid, name: '在线台数'})
+            dataValidDehums.push({value: summaryData.total-summaryData.total_valid, name: '下线台数'})
+
+            dataWorkDehums.push({value: summaryData.total_working, name: '工作台数'})
+            dataWorkDehums.push({value: summaryData.total-summaryData.total_working, name: '待机台数'})
+
+            chart1.setOption(option1, true)
+            chart1.hideLoading()
+            chart2.setOption(option2, true)
+            chart2.hideLoading()
+
+            $('#span_alarm_today').text(summaryData.cnt_alarms)
+            $('#span_wsd_lasttime').text("最后采集时间："+(summaryData.wsd_lasttime ? moment(summaryData.wsd_lasttime).format("YYYY-MM-DD HH:mm:ss") : '无'))
+            $('#span_last_req_time').text("页面刷新时间："+moment().format("YYYY-MM-DD HH:mm:ss"))
+
+
+            if( !(summaryData.wsd_lasttime_duration && summaryData.wsd_lasttime_duration <= 3) ){
+                $('#span_wsd_error').show()
+                $('#span_wsd_lasttime').css('color', 'red')
+            }
+            else{
+                $('#span_wsd_error').hide()
+                $('#span_wsd_lasttime').css('color', 'white')
+            }
+        })
+
     }
 
     function drawCharUsage(){
@@ -468,15 +583,13 @@
     }
 
     function initPage(){
-        drawChart1()
-        drawChart2()
+        // drawChart1()
+        // drawChart2()
+        drawChart()
         drawCharUsage()
 
-        let beginDate = moment(new Date()).format("YYYY-MM-DD")
-        let endDate = moment(new Date()).format("YYYY-MM-DD")
-        strHref = "alarms?beginDate="+beginDate+"&endDate="+endDate
-        // alert(strHref)
-        $('#span_alarm_today a').attr("href", strHref)
+        setInterval(drawCharUsage, 30000)
+        setInterval(drawChart, 30000)
 
     }
 
