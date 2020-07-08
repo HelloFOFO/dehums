@@ -6,10 +6,13 @@ let cookieParser = require('cookie-parser');
 let schedule = require('node-schedule');
 let dbService = require('./service/dbService')
 let logger = require('morgan');
+let moment = require('moment')
 
 let webRouter = require('./routes/webRouter');
 
 let app = express();
+
+app.locals.moment = moment
 
 schedule.scheduleJob('30 05 * * *', dbService.job_update_sd_dehum_dd)
 

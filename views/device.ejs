@@ -48,20 +48,20 @@
             <div class="row" style="margin-top: 15px;">
                 <div class="col-lg-6 col-md-6">
                     <div class="dehum-content-subtitle dehum-div-border">
-                        <span>加热时间/用电</span>
-                    </div>
-                    <div class="dehum-div-border text-center">
-                        <div id="div_chart_heat_usage" style="height:300px; width: 100%;">
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6 col-md-6">
-                    <div class="dehum-content-subtitle dehum-div-border">
                         <span>除湿时间/用电</span>
                     </div>
                     <div class="dehum-div-border">
                         <div id="div_chart_dehum_usage" style="height:300px; width: 100%;">
 
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6">
+                    <div class="dehum-content-subtitle dehum-div-border">
+                        <span>加热时间/用电</span>
+                    </div>
+                    <div class="dehum-div-border text-center">
+                        <div id="div_chart_heat_usage" style="height:300px; width: 100%;">
                         </div>
                     </div>
                 </div>
@@ -328,8 +328,8 @@
         let heatTime = []
         let heatWH = []
 
-        let chart3 = echarts.init(document.getElementById('div_chart_heat_usage'), 'dark');
-        let chart4 = echarts.init(document.getElementById('div_chart_dehum_usage'), 'dark');
+        let chart3 = echarts.init(document.getElementById('div_chart_dehum_usage'), 'dark');
+        let chart4 = echarts.init(document.getElementById('div_chart_heat_usage'), 'dark');
 
         chart3.showLoading({
             text: '数据正在加载...',

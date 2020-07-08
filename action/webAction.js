@@ -8,7 +8,9 @@ exports.renderStation = function(req, res){
         total: 0,
         total_valid: 0,
         total_working: 0,
-        cnt_alarms: 0
+        cnt_alarms: 0,
+        wsd_error: 0,
+        wsd_last_time: ""
     }
 
     dbService.getStationSummary(function(err, data){

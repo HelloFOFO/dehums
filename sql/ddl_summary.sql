@@ -6,19 +6,24 @@ CREATE PROCEDURE spq_summary_data()
 BEGIN
 DECLARE v_total,v_total_valid,v_total_working, v_cnt_alarms int DEFAULT -1;  
 
+DECLARE v_wsd_lasttime_duration int DEFAULT 0;
+DECLARE v_wsd_lasttime datetime;
+
 
 SELECT COUNT(1) AS total
               ,SUM(CASE WHEN n.valid = 1 THEN 1 ELSE 0 END)  AS total_valid
               ,SUM(CASE WHEN n.valid = 1 AND (n.dehum_state = 1 OR n.heat_state = 1) THEN 1 ELSE 0 END) AS total_working
-              INTO v_total,v_total_valid,v_total_working
+              ,ROUND((unix_timestamp(NOW())-unix_timestamp(MAX(time)))/60,0) AS wsd_lasttime_duration
+              ,MAX(time) AS wsd_last_time
+              INTO v_total,v_total_valid,v_total_working,v_wsd_lasttime_duration,v_wsd_lasttime
 FROM     newest_data n;
 
 SELECT COUNT(1) AS cnt_alarms INTO v_cnt_alarms
 FROM    history_alarm
 WHERE DATEDIFF(NOW(), time) = 0 AND status = 0;
 
-SELECT v_total AS total,IFNULL(v_total_valid,0) AS total_valid,IFNULL(v_total_working,0) AS total_working,IFNULL(v_cnt_alarms,0) AS cnt_alarms;
-
+SELECT v_total AS total,IFNULL(v_total_valid,0) AS total_valid,IFNULL(v_total_working,0) AS total_working,IFNULL(v_cnt_alarms,0) AS cnt_alarms,
+			   v_wsd_lasttime_duration AS wsd_lasttime_duration ,v_wsd_lasttime AS wsd_lasttime;
 
 END$$
 DELIMITER ;
