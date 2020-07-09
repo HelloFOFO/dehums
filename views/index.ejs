@@ -283,7 +283,7 @@
             $('#span_last_req_time').text("页面刷新时间："+moment().format("YYYY-MM-DD HH:mm:ss"))
 
 
-            if( !(summaryData.wsd_lasttime_duration && summaryData.wsd_lasttime_duration <= 3) ){
+            if( summaryData.wsd_lasttime_duration === null || summaryData.wsd_lasttime_duration >= 3 ){
                 $('#span_wsd_error').show()
                 $('#span_wsd_lasttime').css('color', 'red')
             }
