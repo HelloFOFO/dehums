@@ -36,9 +36,9 @@ app.use(session({
 }));
 
 app.use(function(req, res, next){
-    if(req.session && req.session.user && !res.locals.localUserInfo){
+    if(req.session && req.session.userName && !res.locals.localUserInfo){
         //如果有session,并且 res.locals.localUserInfo 为空
-        res.locals.localUserInfo = req.session.user;
+        res.locals.localUserInfo = req.session.userName;
     }else{
         res.locals.localUserInfo = {};
     }

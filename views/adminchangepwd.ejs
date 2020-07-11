@@ -1,0 +1,123 @@
+<!-- BEGIN HEADER -->
+<%include widget/adminheader%>
+<!-- END HEADER -->
+
+<!--BEGIN LOAD PAGE LEVEL CSS STYLE-->
+<!-- IF YOU HAVE PAGE LEVEL CSS-->
+<!--<link href="/css/pages/varPageName.css" rel="stylesheet" media="screen">-->
+<!--END LOAD PAGE LEVEL CSS STYLE-->
+
+<!-- BEGIN PAGE CONTAINER -->
+<div class="page-container">
+    <div class="page-content">
+        <!-- BEGIN PAGE CONTENT -->
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 col-lg-offset-4 col-md-4 col-md-offset-4 text-center">
+                    <h3>修改密码</h3>
+                    <form class="form-horizontal form-without-legend" role="form">
+                        <div class="form-group">
+                            <label for="username" class="col-lg-4 control-label">旧密码 <span class="require">*</span></label>
+                            <div class="col-lg-8">
+                                <input type="password" class="form-control" id="password_old">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="password" class="col-lg-4 control-label">新密码(5位以上) <span class="require">*</span></label>
+                            <div class="col-lg-8">
+                                <input type="password" class="form-control" id="password_new">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="password" class="col-lg-4 control-label">确认新密码 <span class="require">*</span></label>
+                            <div class="col-lg-8">
+                                <input type="password" class="form-control" id="password_new_check">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-8 col-md-offset-4 padding-left-0 padding-top-20">
+                                <button type="submit" class="btn btn-primary" id="btn_update">修改密码</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- END PAGE CONTENT -->
+    </div>
+</div>
+<!-- END PAGE CONTAINER -->
+
+
+
+<!-- BEGIN FOOTER -->
+<%include widget/adminfooter%>
+<!-- END FOOTER -->
+
+
+<!-- BEGIN PAGE LEVEL SCRIPTS IF NEEDED-->
+<script type="text/javascript" src="/assets/plugins/validator.min.js" ></script>
+<!-- END PAGE LEVEL SCRIPTS IF NEEDED -->
+
+<script>
+    function initMe() {
+        $('#btn_update').click(function(e){
+            e.preventDefault()
+
+            let password_old = $('#password_old').val().trim()
+            let password_new = $('#password_new').val().trim()
+            let password_new_check = $('#password_new_check').val().trim()
+
+            if(validator.isEmpty(password_old)){
+                alert("请输入--旧密码--")
+                return
+            }
+            if(validator.isEmpty(password_new)){
+                alert("请输入--新密码--")
+                return
+            }
+            if(validator.isEmpty(password_new_check)){
+                alert("请输入--确认新密码--")
+                return
+            }
+            if(password_new != password_new_check){
+                alert("两次输入的新密码不一致")
+                return
+            }
+            if(password_new.length <= 5){
+                alert("新密码长度至少为5")
+                return
+            }
+
+            let passwordData = {
+                passwordOld: password_old,
+                passwordNew: password_new
+            }
+
+            $.ajax({
+                url:'/updatepassword',
+                method:'post',
+                data:passwordData
+            }).done(function(data){
+                if(data.errorCode == 200){
+                    alert("密码修改成功")
+                    window.location.href = '/logout'
+                    // setTimeout(function(){
+                    //     window.location.href = '/logout'
+                    // }, 1000)
+                }
+                else{
+                    alert(data.errorMsg)
+                }
+            });
+        })
+    }
+
+    jQuery(document).ready(function() {
+        initMe()
+    });
+</script>
+
+
+</body>
+</html>

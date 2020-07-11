@@ -9,6 +9,98 @@ let heredoc = function(fn) {
     return fn.toString().split('\n').slice(1,-1).join('\n') + '\n'
 };
 
+exports.checkUserLogin = function(loginData, cb){
+    async.auto(
+        {
+            checkExists:function(cb){
+                pool.getConnection(function (error, conn) {
+                    if (error) {
+                        cb("数据库连接失败");
+                    } else {
+                        let sql = "SELECT username FROM sys_user WHERE username = ? AND pwd = ? AND is_valid = 'T' LIMIT 1"
+                        let sqlParams = [loginData.userName, loginData.password]
+                        conn.query(sql, sqlParams, function (err, rows) {
+                            conn.release();
+                            if (!err && rows.length == 1) {
+                                cb(null);
+                            }
+                            else {
+                                console.log(err)
+                                cb("密码验证失败")
+                            }
+                        })
+                    }
+                })
+            }
+        },
+        function(err){
+            cb(err)
+        }
+    )
+}
+
+exports.updatePassword = function(d, cb){
+    async.waterfall(
+        [
+            //判断用户名密码是否正确
+            function(cb){
+                pool.getConnection(function (error, conn) {
+                    if (error) {
+                        cb("数据库连接失败");
+                    } else {
+                        let sql = heredoc(function () {/*
+                         select username
+                         from   sys_user
+                         where  username = ? and pwd = ?;
+                         */});
+                        conn.query(sql,[d.userName, d.passwordOld], function (error, rows) {
+                            conn.release();
+                            if (error) {
+                                cb("数据库查询失败");
+                            } else {
+                                cb(null, rows.length);
+                            }
+                        })
+                    }
+                })
+            },
+            //判断并更新sys_user表
+            function(count, cb) {
+                if(count == 1){
+                    pool.getConnection(function (error, conn) {
+                        if (error) {
+                            cb("数据库连接失败");
+                        } else {
+                            let sql = heredoc(function () {/*
+                             update sys_user
+                             set    pwd = ?
+                             where  username = ?
+                             */});
+
+                            conn.query(sql, [d.passwordNew, d.userName], function (err, rows) {
+                                conn.release();
+                                // console.log(sql)
+                                if (err) {
+                                    // console.log(err)
+                                    cb("用户名密码更新错误-1");
+                                }
+                                else {
+                                    cb(null)
+                                }
+                            })
+                        }
+                    })
+                }
+                else{
+                    cb("用户名密码不匹配")
+                }
+            }
+        ],function(err){
+            cb(err)
+        }
+    )
+}
+
 exports.getGlobalConfig = function(cb){
     async.auto({
             globalConfig:function(cb1){

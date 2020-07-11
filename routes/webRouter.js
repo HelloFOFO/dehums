@@ -28,6 +28,12 @@ router.get('/ajax/getExcel', web.getExcel)
 
 
 // 下面是管理配置相关的页面；
+router.get('/admin*', web.dehumAuth)
+router.get('/login', web.renderLogin)
+router.post('/login',web.checkLogin)
+router.get('/logout',web.logout)
+router.get('/adminchangepwd', web.renderAdminUpdatePwd)
+router.post('/updatepassword', web.updatePassword)
 
 // 全局配置相关
 router.get('/admin', web.renderAdminIndex)

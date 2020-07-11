@@ -3,6 +3,64 @@ let moment = require('moment')
 let validator = require('validator')
 let XLSX = require('xlsx')
 
+exports.dehumAuth = function(req, res, next){
+    if(req.session.userName){
+        next()
+    }
+    else{
+        res.redirect('/login')
+    }
+}
+
+exports.renderLogin = function(req, res){
+    res.render('login')
+}
+
+exports.checkLogin = function(req, res){
+    let loginData = req.body
+    dbService.checkUserLogin(loginData, function(err){
+        if( !err ){
+            req.session.userName = loginData.userName
+        }
+        let data = {
+            errorCode: (err) ? -1 : 200,
+            errorMsg: (err) ? err : ""
+        }
+        res.json(data)
+    })
+}
+
+exports.logout = function(req, res){
+    req.session.userName = null
+    res.redirect('/login')
+}
+
+exports.renderAdminUpdatePwd = function(req, res){
+    res.render('adminchangepwd', {title:"修改密码"})
+}
+
+exports.updatePassword = function(req, res){
+    let userName = req.session.userName
+    let pwdData = req.body
+    if(userName && pwdData.passwordOld && pwdData.passwordNew){
+        let d = {
+            userName: userName,
+            passwordOld: pwdData.passwordOld,
+            passwordNew: pwdData.passwordNew
+        }
+        dbService.updatePassword(d, function(err){
+            let data = {
+                errorCode: (err) ? -1 : 200,
+                errorMsg: (err) ? err : "密码更新成功"
+            }
+            res.json(data)
+        })
+    }
+    else{
+        res.json({errorCode: -2, errorMsg: "请输入正确的参数"})
+    }
+}
+
 exports.renderStation = function(req, res){
     let summaryData = {
         total: 0,
@@ -300,8 +358,9 @@ exports.renderAdminIndex = function(req,res){
             res.json(err)
         }
         else{
+
             // console.log(data)
-            res.render('adminindex', { title: '除湿机管理后台-全局配置管理', globalConfig: data })
+            res.render('adminindex', { title: '除湿机管理后台-全局配置管理', globalConfig: data||{} })
         }
 
     })

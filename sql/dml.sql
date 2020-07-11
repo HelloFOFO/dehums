@@ -117,7 +117,15 @@ CREATE TABLE sys_dev_config_bak (
 ) ;
 
 
+CREATE TABLE sys_user(
+username varchar(30),
+pwd varchar(20),
+is_valid char(1) DEFAULT 'T',
+insert_dt datetime DEFAULT NULL,
+update_dt timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+PRIMARY KEY(username)
+);
 
-
+INSERT INTO sys_user(username, pwd, insert_dt) VALUES('admin', 'gywsdAdmin',NOW());
 
 
