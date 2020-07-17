@@ -261,7 +261,8 @@ exports.getDevices = function(params, cb){
                     let sql = heredoc(function () {/*
                              select t.time, t.area_num,sa.area_name, t.box_num,sb.box_name, t.dev_num, t.hum_value, t.temp_value, t.valid
                                    ,t.dehum_state, t.heat_state, t.dehum_total_time, t.heat_total_time, t.hum_set_value, t.hum_return_diff
-                                   ,t.hum_adjust_value, t.heat_start_temp, t.heat_return_diff, t.dehum_total_wh, t.heat_total_wh
+                                   ,t.hum_adjust_value, t.heat_start_temp, t.heat_return_diff
+                                   ,ROUND(t.dehum_total_wh,2) AS dehum_total_wh, ROUND(t.heat_total_wh,2) AS heat_total_wh
                              from newest_data t
                                   LEFT JOIN sys_area sa ON t.area_num = sa.area_num
                                   LEFT JOIN sys_box  sb ON t.box_num = sb.box_num

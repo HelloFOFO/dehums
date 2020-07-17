@@ -84,29 +84,29 @@
         <div class="div-device">
             <div class="div-device-title">【{{this.box_name}}】#{{this.dev_num}}除湿机</div>
             <div class="div-device-item">
-                <div class="key">温度</div><div class="value">{{this.temp_value}}</div>
-                {{#if this.heat_state}}<span style="color:red;">工作</span>{{else}}待机{{/if}}
+                <div class="key">
+                    <i class="fa fa-thermometer-half fa-2x" {{#if this.heat_state}} style="color:red;" {{/if}} aria-hidden="true"></i>
+                    <span>{{this.temp_value}} &degC</span>
+                </div>
+                <div class="value">
+                    <i class="fa fa-tint fa-2x" {{#if this.dehum_state}} style="color:red;" {{/if}} aria-hidden="true"></i>
+                    <span>{{this.hum_value}}%</span>
+                </div>
+            </div>
+            <div class="div-device-item">
+                <div class="key">除湿时间</div><div class="value">{{this.dehum_total_time}}&nbsp;分钟</div>
                 <div class="clearfix"></div>
             </div>
             <div class="div-device-item">
-                <div class="key">湿度</div><div class="value">{{this.hum_value}}</div>
-                {{#if this.dehum_state}}<span style="color:red;">工作</span>{{else}}待机{{/if}}
+                <div class="key">除湿电量</div><div class="value">{{this.dehum_total_wh}}&nbsp;&nbsp;瓦时</div>
                 <div class="clearfix"></div>
             </div>
             <div class="div-device-item">
-                <div class="key">除湿时间</div><div class="value">{{this.dehum_total_time}}&nbsp;&nbsp;min</div>
+                <div class="key">加热时间</div><div class="value">{{this.heat_total_time}}&nbsp;&nbsp;分钟</div>
                 <div class="clearfix"></div>
             </div>
             <div class="div-device-item">
-                <div class="key">加热时间</div><div class="value">{{this.heat_total_time}}&nbsp;&nbsp;min</div>
-                <div class="clearfix"></div>
-            </div>
-            <div class="div-device-item">
-                <div class="key">除湿电量</div><div class="value">{{this.dehum_total_wh}}&nbsp;&nbsp;WH</div>
-                <div class="clearfix"></div>
-            </div>
-            <div class="div-device-item">
-                <div class="key">加热电量</div><div class="value">{{this.heat_total_wh}}&nbsp;&nbsp;WH</div>
+                <div class="key">加热电量</div><div class="value">{{this.heat_total_wh}}&nbsp;&nbsp;瓦时</div>
                 <div class="clearfix"></div>
             </div>
             <div class="div-device-detail">

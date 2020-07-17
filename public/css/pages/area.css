@@ -11,9 +11,11 @@
     font-size: 16px;
 }
 
-.div-device-item {height: 25px; line-height: 25px; font-size: 14px;}
-.div-device-item .key{min-width: 80px; float:left;}
-.div-device-item .value{min-width: 80px; float:left;}
+.div-device-item {height: 30px; line-height: 30px; font-size: 14px; margin-top: 10px;}
+.div-device-item .showicon{height: 30px; line-height: 30px; text-align: center;}
+.div-device-item .showicon span{ padding: 0 20px 0 5px;}
+.div-device-item .key{min-width: 150px; float:left;height: 30px; line-height: 30px; text-align: center;}
+.div-device-item .value{min-width: 100px; float:left;height: 30px; line-height: 30px;}
 .div-device-detail a{color: #0da3e2}
 .div-device-detail {text-align: right}
 

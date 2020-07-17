@@ -54,3 +54,8 @@ SELECT COUNT(1) AS total
               ,ROUND((unix_timestamp(NOW())-unix_timestamp(MAX(time)))/60,0)
 FROM     newest_data n;
 
+
+SELECT * FROM newest_data LIMIT 10;
+SELECT * FROM history_data LIMIT 10;
+
+SHOW CREATE TABLE newest_data;

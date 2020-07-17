@@ -137,7 +137,7 @@
             yAxis: [
                 {
                     type: 'value',
-                    name: '温度',
+                    name: '温度（摄氏度）',
                     min: -20,
                     max: 100,
                     interval: 20,
@@ -230,7 +230,7 @@
             yAxis: [
                 {
                     type: 'value',
-                    name: '湿度',
+                    name: '湿度（%）',
                     min: 0,
                     max: 100,
                     interval: 20,
@@ -368,22 +368,22 @@
             yAxis: [
                 {
                     type: 'value',
-                    name: '时长',
+                    name: '时长（分钟）',
                     min: 0,
                     max: 1200,
                     interval: 200,
                     axisLabel: {
-                        formatter: '{value} s'
+                        formatter: '{value}'
                     }
                 },
                 {
                     type: 'value',
-                    name: '电量',
+                    name: '电量（瓦时）',
                     min: 0,
                     max: 1200,
                     interval: 200,
                     axisLabel: {
-                        formatter: '{value} Wh'
+                        formatter: '{value}'
                     }
                 }
             ],
@@ -480,22 +480,22 @@
             yAxis: [
                 {
                     type: 'value',
-                    name: '时长',
+                    name: '时长（分钟）',
                     min: 0,
                     max: 900,
                     interval: 150,
                     axisLabel: {
-                        formatter: '{value} s'
+                        formatter: '{value}'
                     }
                 },
                 {
                     type: 'value',
-                    name: '电量',
+                    name: '电量（瓦时）',
                     min: 0,
                     max: 900,
                     interval: 150,
                     axisLabel: {
-                        formatter: '{value} WH'
+                        formatter: '{value}'
                     }
                 }
             ],
@@ -585,8 +585,11 @@
             var maxDehumTime = Math.max.apply(null, dehumTime.concat(1200))
             var maxDehumTimeY = Math.ceil(maxDehumTime/600)*600
             var intervalDehumTimeY = maxDehumTimeY/6
-            option3.yAxis[0].max = maxDehumTimeY
-            option3.yAxis[0].interval = intervalDehumTimeY
+            // 这个地方写死了最大值1500，间隔250
+            option3.yAxis[0].max = 1500
+            option3.yAxis[0].interval = 250
+            // option3.yAxis[0].max = maxDehumTimeY
+            // option3.yAxis[0].interval = intervalDehumTimeY
 
             var maxDehumWh = Math.max.apply(null, dehumWH.concat(1200))
             var maxDehumWhY = Math.ceil(maxDehumWh/600)*600
@@ -597,8 +600,11 @@
             var maxHeatTime = Math.max.apply(null, heatTime.concat(1200))
             var maxHeatTimeY = Math.ceil(maxHeatTime/600)*600
             var intervalHeatTimeY = maxHeatTimeY/6
-            option4.yAxis[0].max = maxHeatTimeY
-            option4.yAxis[0].interval = intervalHeatTimeY
+            // 这个地方写死了最大值1500，间隔250
+            option4.yAxis[0].max = 1500
+            option4.yAxis[0].interval = 250
+            // option4.yAxis[0].max = maxHeatTimeY
+            // option4.yAxis[0].interval = intervalHeatTimeY
 
             var maxHeatWh = Math.max.apply(null, heatWH.concat(1200))
             var maxHeatWhY = Math.ceil(maxHeatWh/600)*600
