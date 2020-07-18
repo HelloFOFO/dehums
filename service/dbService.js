@@ -282,7 +282,7 @@ exports.getDevices = function(params, cb){
                     sql = sql.replace(/__ORDERBY_CLAUSE__/,'order by box_num')
                     sqlParams = sqlParams.concat([ (page-1)*pageSize , pageSize]);
                     conn.query(sql, sqlParams, function (error, rows) {
-                        console.log(sql)
+                        // console.log(sql)
                         conn.release();
                         if (error){
                             console.log(error)

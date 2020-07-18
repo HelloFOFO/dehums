@@ -8,6 +8,7 @@ router.get('/ajax/summary', web.getStationSummary)
 router.get('/ajax/summaryUsage', web.getStationSummaryUsage)
 
 router.get('/area/:areaNum', web.renderArea)
+router.get('/ajax/areaSummary', web.getAreaSummary)
 router.get('/ajax/devices', web.getDevices)
 
 router.get('/device/:devNums', web.renderDevice)

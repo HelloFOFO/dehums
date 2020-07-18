@@ -6,7 +6,7 @@ select * from dev_config;
 
 SELECT * FROM sys_area;
 
-select * from newest_data limit 10;
+select * from sd_dehum_dd limit 10;
 
 select * from history_data limit 10;
 
@@ -57,5 +57,15 @@ FROM     newest_data n;
 
 SELECT * FROM newest_data LIMIT 10;
 SELECT * FROM history_data LIMIT 10;
+SELECT * FROM sd_dehum_dd LIMIT 10;
 
-SHOW CREATE TABLE newest_data;
+
+SELECT cal_dt,COUNT(1)
+FROM    sd_dehum_dd
+GROUP  BY cal_dt
+ORDER  BY 1 DESC;
+
+SELECT * FROM sd_dehum_dd WHERE cal_dt = '2020-07-13' ;
+
+call spq_summary_usage_data();
+

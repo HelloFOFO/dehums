@@ -128,9 +128,32 @@ exports.renderArea = function(req, res){
             res.render('area', { title: '区域运行工况', summaryData:summaryData});
         }
         else{
-            res.render('area', { title: '区域运行工况', summaryData:data  });
+            res.render('area', { title: '区域运行工况', summaryData:data});
         }
     })
+}
+
+exports.getAreaSummary = function(req, res){
+    let summaryData = {
+        area_num: -1,
+        area_name: "未知",
+        total: 0,
+        total_valid: 0,
+        total_working: 0,
+        cnt_alarms: 0
+    }
+
+    let areaNum = req.query.areaNum
+
+    dbService.getAreaSummary(areaNum, function(err, data){
+        if(err){
+            res.json({data:summaryData});
+        }
+        else{
+            res.json({data:data});
+        }
+    })
+
 }
 
 exports.renderDevice = function(req, res){

@@ -37,12 +37,17 @@ BEGIN
 DECLARE v_areaname varchar(100);
 DECLARE v_total,v_total_valid,v_total_working, v_cnt_alarms int DEFAULT -1;  
 
+DECLARE v_wsd_lasttime_duration int DEFAULT 0;
+DECLARE v_wsd_lasttime datetime;
+
 SELECT area_name INTO v_areaname FROM sys_area WHERE area_num = v_area_num;
 
 SELECT COUNT(1) AS total
               ,SUM(CASE WHEN n.valid = 1 THEN 1 ELSE 0 END)  AS total_valid
               ,SUM(CASE WHEN n.valid = 1 AND (n.dehum_state = 1 OR n.heat_state = 1) THEN 1 ELSE 0 END) AS total_working
-              INTO v_total,v_total_valid,v_total_working
+              ,ROUND((unix_timestamp(NOW())-unix_timestamp(MAX(time)))/60,0) AS wsd_lasttime_duration
+              ,MAX(time) AS wsd_last_time
+              INTO v_total,v_total_valid,v_total_working,v_wsd_lasttime_duration,v_wsd_lasttime
 FROM     newest_data n
 WHERE  v_area_num = n.area_num;
 
@@ -51,7 +56,8 @@ FROM    history_alarm
 WHERE DATEDIFF(NOW(), time) = 0 AND area_num = v_area_num AND status = 0;
 
 
-SELECT v_area_num AS area_num,v_areaname AS area_name,v_total AS total,IFNULL(v_total_valid,0) AS total_valid,IFNULL(v_total_working,0) AS total_working,IFNULL(v_cnt_alarms,0) AS cnt_alarms;
+SELECT v_area_num AS area_num,v_areaname AS area_name,v_total AS total,IFNULL(v_total_valid,0) AS total_valid,IFNULL(v_total_working,0) AS total_working
+			  ,IFNULL(v_cnt_alarms,0) AS cnt_alarms,v_wsd_lasttime_duration AS wsd_lasttime_duration ,v_wsd_lasttime AS wsd_lasttime;
 
 END$$
 DELIMITER ;
