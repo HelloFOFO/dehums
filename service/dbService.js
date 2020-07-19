@@ -388,7 +388,7 @@ exports.getDeviceTempAndHum = function(deviceInfo, cb){
                     cb1("error_db_connect", null);
                 } else {
                     let sql = heredoc(function () {/*
-                     select time,hum_value,temp_value
+                     select time,hum_value,hum_set_value, hum_return_diff,temp_value,heat_start_temp,heat_return_diff
                      from   history_data
                      where  area_num = ? and box_num = ? and dev_num = ? and datediff(time,current_date()) = 0 and valid = 1
                      order  by time asc
@@ -615,7 +615,36 @@ exports.getPointData = function(points, date, cb){
                                  */});
 
                     var point_info = point.split('_')
-                    var column_name = point_info[3] == 'TEMP' ? 'temp_value': 'hum_value'
+                    var column_name = ""
+                    var show_column_name = ""
+                    switch(point_info[3]){
+                        case "TEMP":
+                            column_name = "temp_value"
+                            show_column_name = "temp_value"
+                            break;
+                        case "TEMPSET":
+                            column_name = "heat_start_temp"
+                            show_column_name = "heat_start_temp"
+                            break;
+                        case "TEMPRETURN":
+                            column_name = "heat_start_temp+heat_return_diff AS heat_return_value"
+                            show_column_name = "heat_return_value"
+                            break;
+                        case "HUM":
+                            column_name = "hum_value"
+                            show_column_name = "hum_value"
+                            break;
+                        case "HUMSET":
+                            column_name = "hum_set_value"
+                            show_column_name = "hum_set_value"
+                            break;
+                        case "HUMRETURN":
+                            column_name = "hum_set_value-hum_return_diff AS hum_return_value"
+                            show_column_name = "hum_return_value"
+                            break;
+                        default:
+                            column_name = "hum_value"
+                    }
                     sql = sql.replace('__COLUMN__', column_name)
 
                     var sqlParams = []
@@ -633,7 +662,7 @@ exports.getPointData = function(points, date, cb){
                         else{
                             var array_point = []
                             for(i=0; i<rows.length; i++)
-                                array_point.push(rows[i][column_name])
+                                array_point.push(rows[i][show_column_name])
                             var array_data = {
                                 'point': point,
                                 'data': array_point

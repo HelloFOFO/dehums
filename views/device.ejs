@@ -97,8 +97,9 @@
             time.push(label);
         }
 
-        let temperature = []
-        let hum = []
+        let seriesTemp = []
+        let seriesHum = []
+
 
         let chartTemp = echarts.init(document.getElementById('div_chart_temp'), 'dark');
         let chartHum = echarts.init(document.getElementById('div_chart_hum'), 'dark');
@@ -125,9 +126,13 @@
                     }
                 }
             },
+            color: ["#006699", "red", "#E9C58D"],
+            legend: {
+                data: ['温度', '限定值', '返回值']
+            },
             xAxis: [
                 {
-                    type: 'category',
+                    type: 'time',
                     data: time,
                     axisPointer: {
                         type: 'shadow'
@@ -146,13 +151,7 @@
                     }
                 }
             ],
-            series: [
-                {
-                    name: '温度',
-                    type: 'line',
-                    data: temperature
-                }
-            ],
+            series: seriesTemp,
             toolbox: {
                 show : true,//是否显示工具栏组件
                 orient: 'horizontal',//工具栏icon的布局朝向
@@ -218,10 +217,14 @@
                     }
                 }
             },
+            color: ["#006699", "red", "#E9C58D"],
+            legend: {
+                data: ['湿度', '限定值', '返回值']
+            },
             xAxis: [
                 {
-                    type: 'category',
-                    data: time,
+                    type: 'time',
+                    // data: time,
                     axisPointer: {
                         type: 'shadow'
                     }
@@ -239,13 +242,7 @@
                     }
                 }
             ],
-            series: [
-                {
-                    name: '湿度',
-                    type: 'line',
-                    data: hum
-                }
-            ],
+            series: seriesHum,
             toolbox: {
                 show : true,//是否显示工具栏组件
                 orient: 'horizontal',//工具栏icon的布局朝向
@@ -306,14 +303,45 @@
             method:'GET',
             data:deviceInfo
         }).done(function(data) {
+            let tempValueCurrent = []
+            let tempValueSet = []
+            let tempValueReturn = []
+
+            let humValueCurrent = []
+            let humValueSet = []
+            let humValueReturn = []
+
             let dataChart = data
+            // for(var i in dataChart){
+            //     var time = dataChart[i].time
+            //     var hh = moment(time).get('hours')
+            //     var mi = moment(time).get('minutes')
+            //
+            //     temperature[hh*60+mi] = dataChart[i].temp_value
+            //
+            //     hum[hh*60+mi] = dataChart[i].hum_value
+            // }
+
             for(var i in dataChart){
-                var time = dataChart[i].time
-                var hh = moment(time).get('hours')
-                var mi = moment(time).get('minutes')
-                temperature[hh*60+mi] = dataChart[i].temp_value
-                hum[hh*60+mi] = dataChart[i].hum_value
+                tempValueCurrent.push([dataChart[i].time, dataChart[i].temp_value])
+                tempValueSet.push([dataChart[i].time, dataChart[i].heat_start_temp])
+                tempValueReturn.push([dataChart[i].time, dataChart[i].heat_start_temp+dataChart[i].heat_return_diff])
+
+                humValueCurrent.push([dataChart[i].time, dataChart[i].hum_value])
+                humValueSet.push([dataChart[i].time, dataChart[i].hum_set_value])
+                humValueReturn.push([dataChart[i].time, dataChart[i].hum_set_value-dataChart[i].hum_return_diff])
             }
+
+            seriesTemp.splice(0,seriesTemp.length)
+            seriesTemp.push({type: 'line', name:'温度', data: tempValueCurrent,showSymbol: false,hoverAnimation: false})
+            seriesTemp.push({type: 'line', name:'限定值', data: tempValueSet,showSymbol: false,hoverAnimation: false})
+            seriesTemp.push({type: 'line', name:'返回值', data: tempValueReturn,showSymbol: false,hoverAnimation: false})
+
+            seriesHum.splice(0,seriesTemp.length)
+            seriesHum.push({type: 'line',name:'湿度', data: humValueCurrent,showSymbol: false,hoverAnimation: false})
+            seriesHum.push({type: 'line',name:'限定值', data: humValueSet,showSymbol: false,hoverAnimation: false})
+            seriesHum.push({type: 'line',name:'返回值', data: humValueReturn,showSymbol: false,hoverAnimation: false})
+
             chartTemp.setOption(optionChartTemp, true)
             chartTemp.hideLoading()
             chartHum.setOption(optionChartHum, true)
