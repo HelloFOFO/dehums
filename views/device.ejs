@@ -132,7 +132,7 @@
             },
             xAxis: [
                 {
-                    type: 'time',
+                    type: 'category',
                     data: time,
                     axisPointer: {
                         type: 'shadow'
@@ -223,8 +223,8 @@
             },
             xAxis: [
                 {
-                    type: 'time',
-                    // data: time,
+                    type: 'category',
+                    data: time,
                     axisPointer: {
                         type: 'shadow'
                     }
@@ -312,35 +312,40 @@
             let humValueReturn = []
 
             let dataChart = data
-            // for(var i in dataChart){
-            //     var time = dataChart[i].time
-            //     var hh = moment(time).get('hours')
-            //     var mi = moment(time).get('minutes')
-            //
-            //     temperature[hh*60+mi] = dataChart[i].temp_value
-            //
-            //     hum[hh*60+mi] = dataChart[i].hum_value
-            // }
-
             for(var i in dataChart){
-                tempValueCurrent.push([dataChart[i].time, dataChart[i].temp_value])
-                tempValueSet.push([dataChart[i].time, dataChart[i].heat_start_temp])
-                tempValueReturn.push([dataChart[i].time, dataChart[i].heat_start_temp+dataChart[i].heat_return_diff])
+                var time = dataChart[i].time
+                var hh = moment(time).get('hours')
+                var mi = moment(time).get('minutes')
 
-                humValueCurrent.push([dataChart[i].time, dataChart[i].hum_value])
-                humValueSet.push([dataChart[i].time, dataChart[i].hum_set_value])
-                humValueReturn.push([dataChart[i].time, dataChart[i].hum_set_value-dataChart[i].hum_return_diff])
+                tempValueCurrent[hh*60+mi] = dataChart[i].temp_value
+                tempValueSet[hh*60+mi] = dataChart[i].heat_start_temp
+                tempValueReturn[hh*60+mi] = dataChart[i].heat_start_temp+dataChart[i].heat_return_diff
+
+                humValueCurrent[hh*60+mi] = dataChart[i].hum_value
+                humValueSet[hh*60+mi] = dataChart[i].hum_set_value
+                humValueReturn[hh*60+mi] = dataChart[i].hum_set_value-dataChart[i].hum_return_diff
             }
 
+            // for(var i in dataChart){
+            //     tempValueCurrent.push([dataChart[i].time, dataChart[i].temp_value])
+            //     tempValueSet.push([dataChart[i].time, dataChart[i].heat_start_temp])
+            //     tempValueReturn.push([dataChart[i].time, dataChart[i].heat_start_temp+dataChart[i].heat_return_diff])
+            //
+            //     humValueCurrent.push([dataChart[i].time, dataChart[i].hum_value])
+            //     humValueSet.push([dataChart[i].time, dataChart[i].hum_set_value])
+            //     humValueReturn.push([dataChart[i].time, dataChart[i].hum_set_value-dataChart[i].hum_return_diff])
+            // }
+
             seriesTemp.splice(0,seriesTemp.length)
-            seriesTemp.push({type: 'line', name:'温度', data: tempValueCurrent,showSymbol: false,hoverAnimation: false})
-            seriesTemp.push({type: 'line', name:'限定值', data: tempValueSet,showSymbol: false,hoverAnimation: false})
-            seriesTemp.push({type: 'line', name:'返回值', data: tempValueReturn,showSymbol: false,hoverAnimation: false})
+            // seriesTemp.push({type: 'line', name:'温度', data: tempValueCurrent,showSymbol: false,hoverAnimation: false})
+            seriesTemp.push({type: 'line', name:'温度', data: tempValueCurrent})
+            seriesTemp.push({type: 'line', name:'限定值', data: tempValueSet})
+            seriesTemp.push({type: 'line', name:'返回值', data: tempValueReturn})
 
             seriesHum.splice(0,seriesTemp.length)
-            seriesHum.push({type: 'line',name:'湿度', data: humValueCurrent,showSymbol: false,hoverAnimation: false})
-            seriesHum.push({type: 'line',name:'限定值', data: humValueSet,showSymbol: false,hoverAnimation: false})
-            seriesHum.push({type: 'line',name:'返回值', data: humValueReturn,showSymbol: false,hoverAnimation: false})
+            seriesHum.push({type: 'line',name:'湿度', data: humValueCurrent})
+            seriesHum.push({type: 'line',name:'限定值', data: humValueSet})
+            seriesHum.push({type: 'line',name:'返回值', data: humValueReturn})
 
             chartTemp.setOption(optionChartTemp, true)
             chartTemp.hideLoading()
