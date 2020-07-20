@@ -18,7 +18,7 @@
                 <div class="col-lg-4 col-md-4">
                     <div class="dehum-content-subtitle dehum-div-border">
                         <span>在线台数/总台数</span>
-                        <span class="dehum-content-subtitle-value"><%- summaryData.total_valid%>/<%- summaryData.total%></span>
+                        <span class="dehum-content-subtitle-value" id="span_total_valid"><%- summaryData.total_valid%></span>/<span class="dehum-content-subtitle-value" id="span_total_A"><%- summaryData.total%></span>
                     </div>
                     <div class="dehum-div-border text-center">
                         <div id="div_chart_1" style="height:150px; width: 100%;">
@@ -28,7 +28,7 @@
                 <div class="col-lg-4 col-md-4">
                     <div class="dehum-content-subtitle dehum-div-border">
                         <span>工作台数/总台数</span>
-                        <span class="dehum-content-subtitle-value"><%- summaryData.total_working%>/<%- summaryData.total%></span>
+                        <span class="dehum-content-subtitle-value" id="span_total_working"><%- summaryData.total_working%></span>/<span class="dehum-content-subtitle-value" id="span_total_B"><%- summaryData.total%></span>
                     </div>
                     <div class="dehum-div-border">
                         <div id="div_chart_2" style="height:150px; width: 100%;">
@@ -266,6 +266,11 @@
         $.getJSON('/ajax/summary', function(data){
             let summaryData = data.data
             // alert(JSON.stringify(summaryData))
+
+            $('#span_total_valid').text(summaryData.total_valid)
+            $('#span_total_working').text(summaryData.total_working)
+            $('#span_total_A').text(summaryData.total)
+            $('#span_total_B').text(summaryData.total)
 
             dataValidDehums.push({value: summaryData.total_valid, name: '在线台数'})
             dataValidDehums.push({value: summaryData.total-summaryData.total_valid, name: '下线台数'})
